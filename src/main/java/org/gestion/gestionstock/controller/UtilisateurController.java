@@ -1,0 +1,44 @@
+package org.gestion.gestionstock.controller;
+
+import org.gestion.gestionstock.controller.api.UtilisateurApi;
+import org.gestion.gestionstock.dto.UtilisateurDto;
+import org.gestion.gestionstock.services.UtilisateurService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+public class UtilisateurController implements UtilisateurApi {
+    private final UtilisateurService utilisateurService;
+
+    @Autowired
+    public UtilisateurController(UtilisateurService utilisateurService) {
+        this.utilisateurService = utilisateurService;
+    }
+
+    @Override
+    public void delete(Integer id) {
+        utilisateurService.delete(id);
+    }
+
+    @Override
+    public UtilisateurDto save(UtilisateurDto utilisateurDto) {
+        return utilisateurService.save(utilisateurDto);
+    }
+
+    @Override
+    public UtilisateurDto findById(Integer id) {
+        return utilisateurService.findById(id);
+    }
+
+    @Override
+    public UtilisateurDto findByEmail(String email) {
+        return utilisateurService.findByEmail(email);
+    }
+
+    @Override
+    public List<UtilisateurDto> findAll() {
+        return utilisateurService.findAll();
+    }
+}

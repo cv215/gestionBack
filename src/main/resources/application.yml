@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dbgestionstock?createDatabaseIfNotExist=true
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    ##specify DBNS
+  jpa:
+    database: mysql
+    show-sql: false
+    ##Hibernate ddl auto(create,create-drop, update)
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+server:
+  port: 8081
+
+flickr:
+  apiKey: 4bcf93be859f17ed581198c1eca2443f
+  apiSecret: 5ad8c09cb3dbcee6
+  appKey: 72157720957728470-a8077c1c4838ab4b
+  appSecret: ba7c7eed4f30c443
+
+app:
+  jwt:
+    secret-key: 12345678901234567890123456789012
+  application-time: 900000
+
