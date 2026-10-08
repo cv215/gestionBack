@@ -4,7 +4,6 @@ import org.gestion.gestionstock.controller.api.EntrepriseApi;
 import org.gestion.gestionstock.dto.EntrepriseDto;
 import org.gestion.gestionstock.services.EntrepriseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;

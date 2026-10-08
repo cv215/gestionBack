@@ -1,7 +1,5 @@
 package org.gestion.gestionstock.repository;
 
-import aj.org.objectweb.asm.commons.Remapper;
-import org.gestion.gestionstock.dto.UtilisateurDto;
 import org.gestion.gestionstock.model.Utilisateur;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

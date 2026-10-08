@@ -14,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 @Builder
 @Data
@@ -37,6 +36,8 @@ public class UtilisateurDto implements UserDetails {
     private String photo;
 
     private Roles roles;
+
+    @Builder.Default
     private boolean actif = false;
 
     private String email;

@@ -1,6 +1,5 @@
 package org.gestion.gestionstock.dto;
 
-import jakarta.persistence.OneToMany;
 import lombok.Builder;
 import lombok.Data;
 import org.gestion.gestionstock.model.Entreprise;

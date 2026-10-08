@@ -1,7 +1,6 @@
 package org.gestion.gestionstock.repository;
 
 import org.gestion.gestionstock.model.LigneCommandeFournisseur;
-import org.gestion.gestionstock.model.LigneVente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

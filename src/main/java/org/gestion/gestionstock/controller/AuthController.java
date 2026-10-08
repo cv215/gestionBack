@@ -4,14 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.gestion.gestionstock.config.JetUtils;
 import org.gestion.gestionstock.dto.auth.AuthentificationRequest;
 import org.gestion.gestionstock.dto.auth.AuthentificationResponse;
-import org.gestion.gestionstock.services.impl.ApplicationUserDetailsService;
 import org.gestion.gestionstock.services.impl.UtilisateurServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import static org.gestion.gestionstock.utils.Constants.APP_ROOT;
@@ -23,9 +20,6 @@ import static org.gestion.gestionstock.utils.Constants.APP_ROOT;
 public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private ApplicationUserDetailsService applicationUserDetailsService;
 
     @Autowired
     private UtilisateurServiceImpl utilisateurService;

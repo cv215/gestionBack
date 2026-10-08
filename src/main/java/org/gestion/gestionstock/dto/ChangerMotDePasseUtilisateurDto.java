@@ -11,7 +11,7 @@ public class ChangerMotDePasseUtilisateurDto {
 
     private Integer id;
 
-    private String motDePasse;
+    private String nouveauMotDePasse;
 
-    private String comfirMotDePasse;
+    private String confirmerMotDePasse;
 }

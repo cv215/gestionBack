@@ -2,15 +2,10 @@ package org.gestion.gestionstock.services.impl;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
-import com.flickr4java.flickr.REST;
-import com.flickr4java.flickr.RequestContext;
-import com.flickr4java.flickr.auth.Auth;
-import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import lombok.extern.slf4j.Slf4j;
 import org.gestion.gestionstock.services.FlickrService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;

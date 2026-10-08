@@ -6,7 +6,6 @@ import org.gestion.gestionstock.exception.EntityNotFoundException;
 import org.gestion.gestionstock.exception.ErrorCodes;
 import org.gestion.gestionstock.exception.InvalidEntityException;
 import org.gestion.gestionstock.exception.InvalidOperationException;
-import org.gestion.gestionstock.model.Article;
 import org.gestion.gestionstock.model.Client;
 import org.gestion.gestionstock.model.CommandeClient;
 import org.gestion.gestionstock.repository.ClientRepository;

@@ -1,7 +1,6 @@
 package org.gestion.gestionstock.validator;
 
 import org.gestion.gestionstock.dto.AdresseDto;
-import org.gestion.gestionstock.dto.CathegoryDto;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;

@@ -16,7 +16,6 @@ import org.gestion.gestionstock.repository.VentesRepository;
 import org.gestion.gestionstock.services.MvstkService;
 import org.gestion.gestionstock.services.VentesService;
 import org.gestion.gestionstock.validator.VentesValidator;
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

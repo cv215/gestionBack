@@ -109,7 +109,7 @@ public class UtilisateurServiceImpl implements UtilisateurService{
            throw new EntityNotFoundException("Aucun utilisateur n'a été trouvé avec l'Email" +dto.getEmail(), ErrorCodes.UTILISATEUR_NOT_FOUND);
        }
        Utilisateur utilisateur = utilisateurOptional.get();
-       utilisateur.setMotDePasse(dto.getMotDePasse());
+       utilisateur.setMotDePasse(dto.getNouveauMotDePasse());
         return UtilisateurDto.fromEntity(
                 utilisateurRepository.save(utilisateur)
         );
@@ -126,12 +126,12 @@ public class UtilisateurServiceImpl implements UtilisateurService{
             throw new InvalidOperationException("Aucun email n'a été fournit impossible de changer le mot de passe",
                     ErrorCodes.UTILISATEUR_CHANGE_PASSWORD_OBJECT_NOT_VALID);
         }
-        if (!StringUtils.hasLength(dto.getMotDePasse()) || !StringUtils.hasLength(dto.getComfirMotDePasse())){
+        if (!StringUtils.hasLength(dto.getNouveauMotDePasse()) || !StringUtils.hasLength(dto.getConfirmerMotDePasse())){
             log.warn("Impossible de modifier le mot de passe avec un mot de passe vide ou null");
             throw new InvalidOperationException("Mot de passe utilisateur null:: Impossible de modifier le mot de passe",
                     ErrorCodes.UTILISATEUR_CHANGE_PASSWORD_OBJECT_NOT_VALID);
         }
-        if (!dto.getMotDePasse().equals(dto.getComfirMotDePasse())){
+        if (!dto.getNouveauMotDePasse().equals(dto.getConfirmerMotDePasse())){
             log.warn("Impossible de modifier le mot de passe avec deux mot de passe différent");
             throw new InvalidOperationException("Mot de passe utilisateur non conforme:: Impossible de modifier le mot de passe",
                     ErrorCodes.UTILISATEUR_CHANGE_PASSWORD_OBJECT_NOT_VALID);

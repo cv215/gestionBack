@@ -3,7 +3,6 @@ package org.gestion.gestionstock.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import org.gestion.gestionstock.model.Article;
 import org.gestion.gestionstock.model.Cathegory;
 
 

@@ -9,8 +9,6 @@ import org.gestion.gestionstock.model.EtatCommande;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 @Builder
 @Data

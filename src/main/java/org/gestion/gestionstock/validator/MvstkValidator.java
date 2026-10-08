@@ -1,6 +1,5 @@
 package org.gestion.gestionstock.validator;
 
-import org.gestion.gestionstock.dto.CathegoryDto;
 import org.gestion.gestionstock.dto.MvstkDto;
 import org.springframework.util.StringUtils;
 

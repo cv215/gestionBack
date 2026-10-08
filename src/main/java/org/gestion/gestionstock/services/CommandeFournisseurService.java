@@ -1,8 +1,6 @@
 package org.gestion.gestionstock.services;
 
-import org.gestion.gestionstock.dto.CommandeClientDto;
 import org.gestion.gestionstock.dto.CommandeFournisseurDto;
-import org.gestion.gestionstock.dto.LigneCommandeClientDto;
 import org.gestion.gestionstock.dto.LigneCommandeFournisseurDto;
 import org.gestion.gestionstock.model.EtatCommande;
 
