@@ -1,16 +1,18 @@
 package org.gestion.gestionstock.repository;
 
 
+import java.util.Optional;
+
 import org.gestion.gestionstock.model.Entreprise;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-
-import java.util.Optional;
 @Repository
 public interface EntrepriseRepository extends JpaRepository< Entreprise, Integer> {
 
-    Optional<Entreprise> findById(Integer id);
+    @NonNull
+    Optional<Entreprise> findById(@NonNull Integer id);
 
-    void deleteById(Integer id);
+    void deleteById( @NonNull Integer id);
 }

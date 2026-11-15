@@ -42,6 +42,11 @@
         </dependency>
 
         <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+       </dependency>
+
+        <dependency>
             <groupId>com.flickr4java</groupId>
             <artifactId>flickr4java</artifactId>
             <version>3.0.9</version>
@@ -146,23 +151,6 @@
                                           </excludes>
                                       </configuration>
                                   </plugin>
-
-                                  <plugin>
-                                    <groupId>org.springdoc</groupId>
-                                    <artifactId>springdoc-openapi-maven-plugin</artifactId>
-                                    <version>1.5</version>
-                                    <executions>
-                                      <execution>
-                                       <id>integration-test</id>
-                                       <goals><goal>generate</goal></goals>
-                                      </execution>
-                                    </executions>
-                                  <configuration>
-                                <apiDocsUrl>http://localhost:8081/v3/api-docs</apiDocsUrl>
-                                  <outputFileName>openapi.json</outputFileName>
-                                  <outputDir>${project.basedir}/../frontend/openapi</outputDir>
-                                </configuration>
-                               </plugin>
                               </plugins>
                           </build>
                 </project>

@@ -17,6 +17,8 @@ spring:
 
 server:
   port: 8081
+  servlet:
+    context-path: /gestiondestock/v1
 
 flickr:
   apiKey: 4bcf93be859f17ed581198c1eca2443f
@@ -26,6 +28,10 @@ flickr:
 
 app:
   jwt:
-    secret-key: 12345678901234567890123456789012
+    secret-key: 173b75e3ae41a9a617f2fdc796ffa7d758d0c3a106102fd9b47de56bcac6d749
   application-time: 900000
+
+logging:
+  level:
+    org.springframework.security: DEBUG
 

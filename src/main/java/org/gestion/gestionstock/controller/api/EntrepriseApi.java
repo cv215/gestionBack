@@ -12,14 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import static org.gestion.gestionstock.utils.Constants.APP_ROOT;
 import static org.gestion.gestionstock.utils.Constants.ENTREPRISE_ENDPOINT;
 
 @Tag(name = ENTREPRISE_ENDPOINT)
 public interface EntrepriseApi {
 
-    @PostMapping(value = APP_ROOT + "/entreprises/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ENTREPRISE_ENDPOINT + "/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Enregistrer une entreprise", description = "cette methode permet d'enregistrer ou modifier une entreprise")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object entreprise cree / modifier",
@@ -28,7 +26,7 @@ public interface EntrepriseApi {
     })
     EntrepriseDto save(@RequestBody EntrepriseDto dto);
 
-    @GetMapping(value = APP_ROOT + "/entreprises/{idEntreprise}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ENTREPRISE_ENDPOINT + "/{idEntreprise}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Rechercher une entreprise par ID", description = "cette methode permet de chercher une entreprise par son ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "la entreprise a ete trouve dans la BDD",
@@ -37,7 +35,7 @@ public interface EntrepriseApi {
     })
     EntrepriseDto findById(@PathVariable("idEntreprise") Integer id);
 
-    @GetMapping(value = APP_ROOT + "/entreprises/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ENTREPRISE_ENDPOINT + "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Renvoit la liste des entreprise", description = "cette methode permet de chercher et renvoyer la liste des entreprises qui existent dans la BDD")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "la liste des entreprises / une liste vide",
@@ -45,7 +43,7 @@ public interface EntrepriseApi {
     })
     List<EntrepriseDto> findAll();
 
-    @DeleteMapping(value = APP_ROOT + "/entreprises/delete/{idEntreprise}")
+    @DeleteMapping(value = ENTREPRISE_ENDPOINT + "/delete/{idEntreprise}")
     @Operation(summary = "Supprimer une entreprise", description = "cette methode permet de supprimer une entreprise par son ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'entreprise a ete supprimer dans la BDD",

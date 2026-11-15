@@ -1,17 +1,14 @@
 package org.gestion.gestionstock.services.impl;
 
-import org.gestion.gestionstock.exception.EntityNotFoundException;
-import org.gestion.gestionstock.exception.ErrorCodes;
 import org.gestion.gestionstock.model.Utilisateur;
 import org.gestion.gestionstock.repository.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.Locale;
 
 @Service
 public class ApplicationUserDetailsService implements UserDetailsService {
@@ -21,9 +18,10 @@ public class ApplicationUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Utilisateur utilisateur = repository.findUtilisateurByEmail(email).orElseThrow(()->
-                new EntityNotFoundException("Aucun utilisateur n'existe avec le email fournit", ErrorCodes.UTILISATEUR_NOT_FOUND));
+        String normalizedEmail = email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+        Utilisateur utilisateur = repository.findUtilisateurByEmail(normalizedEmail).orElseThrow(()->
+                new UsernameNotFoundException("Aucun utilisateur n'existe avec le email fournit"));
 
-        return new User(utilisateur.getEmail(), utilisateur.getMotDePasse(), Collections.emptyList());
+        return utilisateur;
     }
 }

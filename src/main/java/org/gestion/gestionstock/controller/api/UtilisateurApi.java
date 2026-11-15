@@ -13,13 +13,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.gestion.gestionstock.utils.Constants.APP_ROOT;
 import static org.gestion.gestionstock.utils.Constants.UTILISATEUR_ENDPOINT;
 
 @Tag(name = UTILISATEUR_ENDPOINT)
 public interface UtilisateurApi {
 
-        @PostMapping(value = APP_ROOT + "/utilisateurs/inscription", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = UTILISATEUR_ENDPOINT + "/inscription", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Enregistrer un utilisateur", description = "cette methode permet d'enregistrer ou modifier un utilisateur")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object utilisateur cree / modifier",
@@ -28,7 +27,7 @@ public interface UtilisateurApi {
     })
     UtilisateurDto save(@RequestBody UtilisateurDto utilisateurDto);
 
-    @GetMapping(value = APP_ROOT + "/utilisateurs/{idUtilisateur}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = UTILISATEUR_ENDPOINT+ "/{idUtilisateur}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Rechercher un utilisateur par ID", description = "cette methode permet de chercher un utilisateur par son ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'utilisateur a ete trouve dans la BDD",
@@ -37,7 +36,7 @@ public interface UtilisateurApi {
     })
     UtilisateurDto findById(@PathVariable("idUtilisateur") Integer id);
 
-        @GetMapping(value = APP_ROOT + "/utilisateurs/email/{email}", produces = MediaType.APPLICATION_JSON_VALUE)
+        @GetMapping(value = UTILISATEUR_ENDPOINT + "/email/{email}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Rechercher un utilisateur par email", description = "cette methode permet de chercher un utilisateur par son email")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'utilisateur a ete trouve dans la BDD",
@@ -46,7 +45,7 @@ public interface UtilisateurApi {
     })
     UtilisateurDto findByEmail(@PathVariable("email") String email);
 
-    @GetMapping(value = APP_ROOT + "/utilisateurs/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = UTILISATEUR_ENDPOINT + "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Renvoit la liste des utilisateurs", description = "cette methode permet de chercher et renvoyer la liste des utilisateurs qui existent dans la BDD")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "la liste des utilisateurs / une liste vide",
@@ -54,7 +53,7 @@ public interface UtilisateurApi {
     })
     List<UtilisateurDto> findAll();
 
-    @DeleteMapping(value = APP_ROOT + "/utilisateurs/delete/{idUtilisateur}")
+    @DeleteMapping(value = UTILISATEUR_ENDPOINT + "/delete/{idUtilisateur}")
     @Operation(summary = "Supprimer un utilisateur", description = "cette methode permet de supprimer un utilisateur par son ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'utilisateur a ete supprimer dans la BDD",

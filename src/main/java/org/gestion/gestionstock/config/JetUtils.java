@@ -7,10 +7,9 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
-
+import java.util.HexFormat;
 
 @Component
 public class JetUtils {
@@ -21,11 +20,12 @@ public class JetUtils {
     @Value("${app.application-time}")
     private long expirationTime;
 
-    private Key getSigningKey(){
-        return Keys.hmacShaKeyFor(secretkey.getBytes(StandardCharsets.UTF_8));
+    private Key getSigningKey() {
+        byte[] keyBytes = HexFormat.of().parseHex(secretkey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username){
+    public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
@@ -34,18 +34,19 @@ public class JetUtils {
                 .compact();
     }
 
-    public boolean validateToken(String token){
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
-    public String extractUsername(String token){
+
+    public String extractUsername(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -53,28 +54,4 @@ public class JetUtils {
                 .getBody()
                 .getSubject();
     }
-
-    /*public String generateToken(String username){
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
-    }
-    private String createToken(Map<String, Object> claims, String username){
-        return Jets.builder();
-
-    }*/
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

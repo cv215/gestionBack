@@ -10,9 +10,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -29,7 +31,7 @@ public class Utilisateur extends AbstractEntity implements UserDetails {
     private String prenom;
 
     @Column(name = "datenaissance")
-    private Instant dateNaissance;
+    private LocalDate dateNaissance;
 
     @Column(name = "motdepasse")
     private String motDePasse;
@@ -50,12 +52,20 @@ public class Utilisateur extends AbstractEntity implements UserDetails {
     @JoinColumn(name = "identreprise")
     private Entreprise entreprise;
 
-    @OneToMany(fetch = FetchType.EAGER,mappedBy = "utilisateur")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Roles> roles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE"+this.roles));
+        if (roles == null) {
+            return Collections.emptyList();
+        }
+        return roles.stream()
+                .filter(Objects::nonNull)
+                .map(Roles::getAuthority)
+                .filter(Objects::nonNull)
+                .map(SimpleGrantedAuthority::new)
+                .toList();
     }
 
     @Override

@@ -109,7 +109,7 @@ public class UtilisateurServiceImpl implements UtilisateurService{
            throw new EntityNotFoundException("Aucun utilisateur n'a été trouvé avec l'Email" +dto.getEmail(), ErrorCodes.UTILISATEUR_NOT_FOUND);
        }
        Utilisateur utilisateur = utilisateurOptional.get();
-       utilisateur.setMotDePasse(dto.getNouveauMotDePasse());
+       utilisateur.setMotDePasse(this.passwordEncoder.encode(dto.getNouveauMotDePasse()));
         return UtilisateurDto.fromEntity(
                 utilisateurRepository.save(utilisateur)
         );

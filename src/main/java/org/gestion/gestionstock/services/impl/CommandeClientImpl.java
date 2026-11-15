@@ -35,7 +35,7 @@ public class CommandeClientImpl implements CommandeClientService {
     private final LigneCommandeClientRepository ligneCommandeClientRepository;
     private final ClientRepository clientRepository;
     private final ArticleRepository articleRepository;
-    private MvstkService mvstkService;
+    private final MvstkService mvstkService;
 
     @Autowired
     public CommandeClientImpl(ArticleRepository articleRepository, ClientRepository clientRepository, CommandeClientRepository commandeClientRepository, LigneCommandeClientRepository ligneCommandeClientRepository, MvstkService mvstkService) {
@@ -60,7 +60,7 @@ public class CommandeClientImpl implements CommandeClientService {
         }
         Optional<Client> client = clientRepository.findById(dto.getClient().getId());
 
-        if (!client.isPresent()){
+        if (!client.isEmpty()){
             log.warn("client with ID {} was not found in the DB", dto.getClient().getId());
             throw new EntityNotFoundException("aucun client avec L'ID "+ dto.getClient().getId() + "n'a ete trouve dans la BDD", ErrorCodes.CLIENT_NOT_FOUND);
         }
@@ -182,6 +182,7 @@ public class CommandeClientImpl implements CommandeClientService {
         }
 
         Optional<Article> articleOptional = articleRepository.findById(newIdArticle);
+
         if (articleOptional.isEmpty()){
             throw new EntityNotFoundException("aucun article n'a été trouvé avec l'ID = "+newIdArticle, ErrorCodes.ARTICLE_NOT_FOUND);
         }

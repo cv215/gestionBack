@@ -2,6 +2,7 @@ package org.gestion.gestionstock.repository;
 
 import org.gestion.gestionstock.model.Ventes;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -10,8 +11,9 @@ public interface VentesRepository extends JpaRepository<Ventes, Integer> {
 
     Optional<Ventes> findVentesByCode(String code);
 
-    void deleteById(Integer id);
+    void deleteById(@NonNull Integer id);
 
-     Optional<Ventes> findById(Integer id);
+     @NonNull
+     Optional<Ventes> findById(@NonNull  Integer id);
 
 }

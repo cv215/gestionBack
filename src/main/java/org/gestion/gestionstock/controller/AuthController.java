@@ -7,15 +7,14 @@ import org.gestion.gestionstock.dto.auth.AuthentificationResponse;
 import org.gestion.gestionstock.services.impl.UtilisateurServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
-import static org.gestion.gestionstock.utils.Constants.APP_ROOT;
-
 @Slf4j
 @RestController
-@RequestMapping(APP_ROOT + "/auth")
+@RequestMapping( "/auth")
 
 public class AuthController {
     @Autowired
@@ -29,11 +28,11 @@ public class AuthController {
 
     @PostMapping("/connexion")
     public ResponseEntity<AuthentificationResponse> connexion(@RequestBody AuthentificationRequest authentificationRequest){
-        authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authentificationRequest.getEmail(), authentificationRequest.getPassword())
         );
         return ResponseEntity.ok(AuthentificationResponse.builder()
-            .accessToken(jetUtils.generateToken(authentificationRequest.getEmail()))
+            .accessToken(jetUtils.generateToken(authentication.getName()))
             .build());
     }
 

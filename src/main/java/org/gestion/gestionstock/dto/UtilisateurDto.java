@@ -12,8 +12,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 @Builder
 @Data
@@ -26,7 +29,7 @@ public class UtilisateurDto implements UserDetails {
 
     private String prenom;
 
-    private Instant dateNaissance;
+    private LocalDate dateNaissance;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String motDePasse;
@@ -35,7 +38,7 @@ public class UtilisateurDto implements UserDetails {
 
     private String photo;
 
-    private Roles roles;
+    private List<Roles> roles;
 
     @Builder.Default
     private boolean actif = false;
@@ -55,6 +58,7 @@ public class UtilisateurDto implements UserDetails {
                 .dateNaissance(utilisateur.getDateNaissance())
                 .motDePasse(utilisateur.getMotDePasse())
                 .photo(utilisateur.getPhoto())
+                .roles(utilisateur.getRoles())
                 .email(utilisateur.getEmail())
                 .actif(utilisateur.isActif())
                 .adresse(AdresseDto.fromEntity(utilisateur.getAdresse()))
@@ -78,7 +82,15 @@ public class UtilisateurDto implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE"+this.roles.getLibelle()));
+        if (roles == null) {
+            return Collections.emptyList();
+        }
+        return roles.stream()
+                .filter(Objects::nonNull)
+                .map(Roles::getAuthority)
+                .filter(Objects::nonNull)
+                .map(SimpleGrantedAuthority::new)
+                .toList();
     }
 
     @Override

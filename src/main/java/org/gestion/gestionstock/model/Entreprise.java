@@ -22,11 +22,17 @@ public class Entreprise extends AbstractEntity{
     @Column(name = "description")
     private String description;
 
+    @Column(name = "propriétaire")
+    private String nomResponsable;
+
     @Embedded
     private Adresse adresse;
 
     @Column(name = "codefiscale")
     private String codeFiscale;
+
+    @Column(name = "motdepasse")
+    private String motDePasse;
 
     @Column(name = "photo")
     private  String photo;

@@ -1,7 +1,7 @@
 package org.gestion.gestionstock.config;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,44 +12,61 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
-
-import java.util.List;
+import javax.crypto.spec.SecretKeySpec;
 
 import static org.springframework.http.HttpMethod.POST;
+import java.util.HexFormat;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 
 @EnableWebSecurity
 @Configuration
 public class SecurityConfiguration {
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Value("${app.jwt.secret-key}")
+    private String secret;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(POST,"/inscription").permitAll()
-                        .requestMatchers(POST,"/activation").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                        .requestMatchers(POST,"/gestiondestock/v1/entreprises/create").permitAll()
-                        .requestMatchers(POST, "/gestiondestock/v1/utilisateurs/inscription").permitAll()
-                        .requestMatchers(POST,"/gestiondestock/v1/auth/connexion").permitAll().anyRequest()
-                        .authenticated())
-                .sessionManagement(httpSecuritySessionManagementConfigurer ->
-                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                ).httpBasic(Customizer.withDefaults());
-            httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/login", "/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.POST,
+                                        "/entreprises/create").permitAll()
+                                .requestMatchers(HttpMethod.POST,
+                                        "/inscription").permitAll()
+                                .requestMatchers(HttpMethod.POST,
+                                        "/activation").permitAll()
+                                .requestMatchers(HttpMethod.POST,
+                                        "/utilisateurs/inscription").permitAll()
+                                .requestMatchers(HttpMethod.POST,
+                                        "/auth/connexion").permitAll()
+                                .requestMatchers(
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui.html",
+                                        "/swagger-ui/**").permitAll()
+                                .anyRequest().authenticated()
+                        ).oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(Customizer.withDefaults())
+            );
 
         return httpSecurity.build();
     }
@@ -71,15 +88,46 @@ public class SecurityConfiguration {
     public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
 }
+
+    @Bean
+    JwtEncoder jwtEncoder() {
+
+        byte[] keyBytes = HexFormat.of().parseHex(secret);
+
+        SecretKey key = new SecretKeySpec(
+                keyBytes,
+                "HmacSHA256"
+        );
+
+        return new NimbusJwtEncoder(
+                new ImmutableSecret<>(key)
+        );
+    }
+
+    @Bean
+    JwtDecoder jwtDecoder() {
+
+        byte[] keyBytes = HexFormat.of().parseHex(secret);
+
+        SecretKey key = new SecretKeySpec(
+                keyBytes,
+                "HmacSHA256"
+        );
+
+        return NimbusJwtDecoder
+                .withSecretKey(key)
+                .macAlgorithm(MacAlgorithm.HS256)
+                .build();
+    }
 }

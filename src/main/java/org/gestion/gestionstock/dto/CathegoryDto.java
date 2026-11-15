@@ -6,6 +6,7 @@ import lombok.Data;
 import org.gestion.gestionstock.model.Cathegory;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,10 @@ public class CathegoryDto {
                 .code(cathegory.getCode())
                 .idEntreprise(cathegory.getIdEntreprise())
                 .designation(cathegory.getDesignation())
-                .articles(cathegory.getArticles().stream().map(ArticleDto::fromEntity)
+                .articles(cathegory.getArticles() == null
+                        ? new ArrayList<>()
+                        : cathegory.getArticles().stream()
+                        .map(ArticleDto::fromEntity)
                         .collect(Collectors.toList()))
                 .build();
     }
@@ -40,6 +44,8 @@ public class CathegoryDto {
             return null;
         }
         Cathegory cathegory = new Cathegory();
+        cathegory.setId(dto.getId());
+        cathegory.setIdEntreprise(dto.getIdEntreprise());
         cathegory.setCode(dto.getCode());
         cathegory.setDesignation(dto.getDesignation());
         return cathegory;

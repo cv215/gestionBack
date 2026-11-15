@@ -82,36 +82,12 @@ public class MvstkServiceImpl implements MvstkService {
 
     @Override
     public MvstkDto correctionStockPos(MvstkDto dto) {
-        List<String> errors = MvstkValidator.Validate(dto);
-        if (!errors.isEmpty()){
-            log.error("mouvement stock is not valid {}", dto);
-            throw new InvalidEntityException("le mouvement de stock n'est pas valide", ErrorCodes.MVT_STK_NOT_VALID, errors);
-        }
-        dto.setQuantite(
-                BigDecimal.valueOf(
-                        Math.abs(dto.getQuantite().doubleValue()))
-        );
-        dto.setTypeMvstkt(TypeMvstk.CORRECTION_POS);
-        return MvstkDto.fromEntity(
-                repository.save(MvstkDto.toEntity(dto))
-        );
+        return entreePositive(dto, TypeMvstk.CORRECTION_POS);
     }
 
     @Override
     public MvstkDto correctionStockNeg(MvstkDto dto) {
-        List<String> errors = MvstkValidator.Validate(dto);
-        if (!errors.isEmpty()){
-            log.error("mouvement stock is not valid {}", dto);
-            throw new InvalidEntityException("le mouvement de stock n'est pas valide", ErrorCodes.MVT_STK_NOT_VALID, errors);
-        }
-        dto.setQuantite(
-                BigDecimal.valueOf(
-                        Math.abs(dto.getQuantite().doubleValue())*-1)
-        );
-        dto.setTypeMvstkt(TypeMvstk.CORRECTION_NEG);
-        return MvstkDto.fromEntity(
-                repository.save(MvstkDto.toEntity(dto))
-        );
+        return sortieNegative(dto, TypeMvstk.CORRECTION_NEG);
     }
 
     private MvstkDto entreePositive(MvstkDto dto, TypeMvstk typeMvstk) {

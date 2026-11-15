@@ -1,6 +1,7 @@
 package org.gestion.gestionstock.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,8 +23,17 @@ public class Roles extends AbstractEntity{
 
     @ManyToOne
     @JoinColumn(name = "idutilisateur")
+    @JsonIgnore
     private Utilisateur utilisateur;
 
     @Enumerated(EnumType.STRING)
     private TypeRole libelle;
+
+    public String getAuthority() {
+        String role = libelle != null ? libelle.name() : roleName;
+        if (role == null || role.isBlank()) {
+            return null;
+        }
+        return role.startsWith("ROLE_") ? role : "ROLE_" + role;
+    }
 }

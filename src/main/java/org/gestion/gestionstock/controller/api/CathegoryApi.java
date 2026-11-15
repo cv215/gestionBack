@@ -18,7 +18,7 @@ import static org.gestion.gestionstock.utils.Constants.APP_ROOT;
 @Tag(name = APP_ROOT + "/cathegory")
 public interface CathegoryApi {
 
-    @PostMapping(value = "/cathegory/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = APP_ROOT + "/cathegory/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Enregistrer une cathegory", description = "cette methode permet d'enregistrer ou modifier une cathegory")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object cathegory cree / modifier",

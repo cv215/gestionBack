@@ -1,5 +1,6 @@
 package org.gestion.gestionstock.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import org.gestion.gestionstock.model.Entreprise;
@@ -15,6 +16,11 @@ public class EntrepriseDto {
     private String nom;
 
     private String description;
+
+    private String nomResponsable;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String motDePasse;
 
     private AdresseDto adresse;
 
@@ -38,6 +44,8 @@ public class EntrepriseDto {
                 .id(entreprise.getId())
                 .nom(entreprise.getNom())
                 .description(entreprise.getDescription())
+                .nomResponsable(entreprise.getNomResponsable())
+                .motDePasse(entreprise.getMotDePasse())
                 .codeFiscale(entreprise.getCodeFiscale())
                 .photo(entreprise.getPhoto())
                 .email(entreprise.getEmail())
@@ -53,6 +61,8 @@ public class EntrepriseDto {
         Entreprise entreprise = new Entreprise();
         entreprise.setNom(entrepriseDto.getNom());
         entreprise.setDescription(entrepriseDto.getDescription());
+        entreprise.setNomResponsable(entrepriseDto.getNomResponsable());
+        entreprise.setMotDePasse(entrepriseDto.getMotDePasse());
         entreprise.setCodeFiscale(entrepriseDto.getCodeFiscale());
         entreprise.setPhoto(entrepriseDto.getPhoto());
         entreprise.setEmail(entrepriseDto.getEmail());
