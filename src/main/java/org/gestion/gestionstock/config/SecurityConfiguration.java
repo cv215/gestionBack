@@ -57,6 +57,7 @@ public class SecurityConfiguration {
                                         "/activation").permitAll()
                                 .requestMatchers(HttpMethod.POST,
                                         "/utilisateurs/inscription").permitAll()
+                                .requestMatchers("/error").permitAll()
                                 .requestMatchers(HttpMethod.POST,
                                         "/auth/connexion").permitAll()
                                 .requestMatchers(
