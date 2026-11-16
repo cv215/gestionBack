@@ -1,6 +1,7 @@
 package org.gestion.gestionstock.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import org.gestion.gestionstock.model.CommandeClient;
@@ -26,7 +27,7 @@ public class CommandeClientDto {
 
     private ClientDto client;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<LigneCommandeClientDto> ligneCommandeClients;
 
     public static CommandeClientDto fromEntity(CommandeClient commandeClient){
@@ -52,6 +53,7 @@ public class CommandeClientDto {
         commandeClient.setDateCommande(commandeClientDto.getDateCommande());
         commandeClient.setEtatCommande(commandeClientDto.getEtatCommande());
         commandeClient.setIdEntreprise(commandeClientDto.getIdEntreprise());
+        commandeClient.setClient(ClientDto.toEntity(commandeClientDto.getClient()));
         return commandeClient;
     }
 

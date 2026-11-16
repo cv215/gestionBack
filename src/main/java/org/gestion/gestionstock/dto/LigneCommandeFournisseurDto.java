@@ -40,6 +40,8 @@ public class LigneCommandeFournisseurDto {
             return null;
         }
         LigneCommandeFournisseur ligneCommandeFournisseur = new LigneCommandeFournisseur();
+        ligneCommandeFournisseur.setId(ligneCommandeFournisseurDto.getId());
+        ligneCommandeFournisseur.setIdEntreprise(ligneCommandeFournisseurDto.getIdEntreprise());
         ligneCommandeFournisseur.setQuantite(ligneCommandeFournisseurDto.getQuantite());
         ligneCommandeFournisseur.setPrixUnitaire(ligneCommandeFournisseurDto.getPrixUnitaire());
         ligneCommandeFournisseur.setArticle(ArticleDto.toEntity(ligneCommandeFournisseurDto.getArticle()));

@@ -33,6 +33,8 @@ public class CommandeClient extends AbstractEntity{
     @JoinColumn(name = "idclient")
     private Client client;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "commandeClient")
     private List<LigneCommandeClient> ligneCommandeClients;
 }

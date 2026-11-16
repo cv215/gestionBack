@@ -21,6 +21,7 @@ public class CathegoryDto {
 
     private  String designation;
 
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
     private List<ArticleDto> articles;
 
     public static CathegoryDto fromEntity(Cathegory cathegory){
@@ -32,11 +33,6 @@ public class CathegoryDto {
                 .code(cathegory.getCode())
                 .idEntreprise(cathegory.getIdEntreprise())
                 .designation(cathegory.getDesignation())
-                .articles(cathegory.getArticles() == null
-                        ? new ArrayList<>()
-                        : cathegory.getArticles().stream()
-                        .map(ArticleDto::fromEntity)
-                        .collect(Collectors.toList()))
                 .build();
     }
     public static Cathegory toEntity(CathegoryDto dto){

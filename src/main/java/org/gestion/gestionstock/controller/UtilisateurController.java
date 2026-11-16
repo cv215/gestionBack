@@ -38,6 +38,11 @@ public class UtilisateurController implements UtilisateurApi {
     }
 
     @Override
+    public UtilisateurDto changerMotDePasse(org.gestion.gestionstock.dto.ChangerMotDePasseUtilisateurDto dto) {
+        return utilisateurService.changerMotDePasse(dto);
+    }
+
+    @Override
     public List<UtilisateurDto> findAll() {
         return utilisateurService.findAll();
     }

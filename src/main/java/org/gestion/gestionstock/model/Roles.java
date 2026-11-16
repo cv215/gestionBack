@@ -21,6 +21,8 @@ public class Roles extends AbstractEntity{
     @Column(name = "rolename")
     private String roleName;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @ManyToOne
     @JoinColumn(name = "idutilisateur")
     @JsonIgnore

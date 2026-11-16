@@ -35,7 +35,7 @@ public interface VentesApi {
     })
     VentesDto findById(@PathVariable("idVentes") Integer id);
 
-    @GetMapping(value = APP_ROOT + "/ventes/{codeVentes}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = APP_ROOT + "/ventes/code/{codeVentes}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Rechercher une vente par code", description = "cette methode permet de chercher une vente par son code")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "la vente a ete trouve dans la BDD",

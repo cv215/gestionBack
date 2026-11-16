@@ -29,6 +29,10 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class VentesServiceImpl implements VentesService {
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.gestion.gestionstock.config.CurrentTenant currentTenant;
+
     private final ArticleRepository articleRepository;
     private final VentesRepository ventesRepository;
     private final LigneVenteRepository ligneVenteRepository;
@@ -56,7 +60,11 @@ public class VentesServiceImpl implements VentesService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public VentesDto save(VentesDto dto) {
+        if (dto != null) {
+            dto.setIdEntreprise(currentTenant.resolve(dto.getIdEntreprise()));
+        }
         List<String> errors = VentesValidator.validate(dto);
         if (!errors.isEmpty()){
             log.error("ventes n'est pas valide");
@@ -70,8 +78,8 @@ public class VentesServiceImpl implements VentesService {
             }
         });
         if (!articleErrors.isEmpty()){
-            log.error("one or more articles were not found in the DB, {}", errors);
-            throw new InvalidEntityException("plusieurs articles non pas ete trouvé dans la BDD",ErrorCodes.VENTES_NOT_VALID, errors);
+            log.error("one or more articles were not found in the DB, {}", articleErrors);
+            throw new InvalidEntityException("un ou plusieurs articles n'ont pas ete trouves dans la BDD",ErrorCodes.VENTES_NOT_VALID, articleErrors);
         }
         Ventes saveVentes = ventesRepository.save(VentesDto.toEntity(dto));
         dto.getLigneVentes().forEach(ligneVenteDto -> {
@@ -109,6 +117,7 @@ public class VentesServiceImpl implements VentesService {
     @Override
     public List<VentesDto> findAll() {
         return ventesRepository.findAll().stream()
+                .filter(e -> currentTenant.owns(e.getIdEntreprise()))
                 .map(VentesDto::fromEntity)
                 .collect(Collectors.toList());
     }

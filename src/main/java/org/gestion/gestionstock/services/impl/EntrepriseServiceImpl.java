@@ -44,8 +44,18 @@ public class EntrepriseServiceImpl implements EntrepriseService {
         List<String> errors = EntrepriseValidator.validate(dto);
         if (!errors.isEmpty()){
             log.error("l'entreprise is not valid {}", dto);
-            throw new InvalidEntityException("l'entreprise n'est pas valide", ErrorCodes.ENTREPRISE_NOT_FOUND, errors);
+            throw new InvalidEntityException("l'entreprise n'est pas valide", ErrorCodes.ENTREPRISE_NOT_VALID, errors);
         }
+        if (!org.springframework.util.StringUtils.hasText(dto.getMotDePasse()) || dto.getMotDePasse().length() < 8) {
+            throw new InvalidEntityException("l'entreprise n'est pas valide", ErrorCodes.ENTREPRISE_NOT_VALID,
+                    List.of("Le mot de passe doit contenir au moins 8 caractères"));
+        }
+        String email = dto.getEmail().trim().toLowerCase(java.util.Locale.ROOT);
+        if (utilisateurRepository.findUtilisateurByEmail(email).isPresent()) {
+            throw new InvalidEntityException("Cette adresse e-mail est déjà utilisée", ErrorCodes.UTILISATEUR_ALREADY_EXISTS,
+                    List.of("Cette adresse e-mail est déjà utilisée"));
+        }
+        dto.setEmail(email);
         dto.setMotDePasse(this.passwordEncoder.encode(dto.getMotDePasse()));
         Entreprise entreprise = EntrepriseDto.toEntity(dto);
         entreprise = entrepriseRepository.save(entreprise);
@@ -54,6 +64,7 @@ public class EntrepriseServiceImpl implements EntrepriseService {
         utilisateur.setEmail(dto.getEmail());
         utilisateur.setMotDePasse(dto.getMotDePasse());
         utilisateur.setNom(dto.getNomResponsable());
+        utilisateur.setAdresse(entreprise.getAdresse());
         utilisateur.setEntreprise(entreprise);
         utilisateur.setActif(true);
 
@@ -62,7 +73,7 @@ public class EntrepriseServiceImpl implements EntrepriseService {
         adminRole.setRoleName(TypeRole.ADMIN_ENTREPRISE.name());
         adminRole.setLibelle(TypeRole.ADMIN_ENTREPRISE);
         adminRole.setUtilisateur(utilisateur);
-        utilisateur.setRoles(List.of(adminRole));
+        utilisateur.setRoles(new java.util.ArrayList<>(List.of(adminRole)));
 
         utilisateurRepository.save(utilisateur);
 
@@ -85,10 +96,9 @@ public class EntrepriseServiceImpl implements EntrepriseService {
             return null;
         }
 
-        Optional<Entreprise> entreprise = entrepriseRepository.findById(id);
-
-        return Optional.of(EntrepriseDto.
-                fromEntity(entreprise.get())).orElseThrow(
+        return entrepriseRepository.findById(id)
+                .map(EntrepriseDto::fromEntity)
+                .orElseThrow(
                 () -> new EntityNotFoundException(
                         "Aucune entreprise avec l'ID = " + id + "n'a été trouvé dans la BBD",
                         ErrorCodes.ENTREPRISE_NOT_FOUND)

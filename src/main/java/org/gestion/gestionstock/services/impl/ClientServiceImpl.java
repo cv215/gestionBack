@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ClientServiceImpl implements ClientService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.gestion.gestionstock.config.CurrentTenant currentTenant;
+
+
     private final ClientRepository clientRepository;
     private CommandeClientRepository commandeClientRepository;
     @Autowired
@@ -34,10 +38,13 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ClientDto save(ClientDto clientDto) {
+        if (clientDto != null) {
+            clientDto.setIdEntreprise(currentTenant.resolve(clientDto.getIdEntreprise()));
+        }
         List<String> errors = ClientValidator.validate(clientDto);
         if (!errors.isEmpty()){
             log.error("client is not valid {}", clientDto);
-            throw new InvalidEntityException("l'article n'est pas valide", ErrorCodes.CLIENT_NOT_FOUND, errors);
+            throw new InvalidEntityException("le client n'est pas valide", ErrorCodes.CLIENT_NOT_VALID, errors);
         }
 
         return ClientDto.fromEntity(
@@ -53,8 +60,9 @@ public class ClientServiceImpl implements ClientService {
             log.error("client ID is null");
             return null;
         }
-        Optional<Client> client = clientRepository.findById(id);
-        return Optional.of(ClientDto.fromEntity(client.get())).orElseThrow(
+        return clientRepository.findById(id)
+                .map(ClientDto::fromEntity)
+                .orElseThrow(
                 () -> new EntityNotFoundException(
                         "aucun client avec ID = "+ id + "n'a été rouvé dans la BDD", ErrorCodes.CLIENT_NOT_FOUND
                 )
@@ -66,6 +74,7 @@ public class ClientServiceImpl implements ClientService {
     public List<ClientDto> findAll() {
 
         return clientRepository.findAll().stream()
+                .filter(e -> currentTenant.owns(e.getIdEntreprise()))
                 .map(ClientDto::fromEntity)
                 .collect(Collectors.toList());
     }

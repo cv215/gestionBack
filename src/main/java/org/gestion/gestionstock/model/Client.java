@@ -37,6 +37,8 @@ public class Client extends AbstractEntity{
     @Column(name = "email")
     private String email;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "client")
     private List<CommandeClient> commandeClients;
 }

@@ -34,10 +34,13 @@ public class ArticleDto {
 
     private CathegoryDto cathegory;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<LigneVente> ligneVentes;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<LigneCommandeClient> ligneCommandeClients;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<LigneCommandeFournisseur> ligneCommandeFournisseurs;
 
     public static ArticleDto fromEntity(Article article){
@@ -61,6 +64,8 @@ public class ArticleDto {
             return  null;
         }
         Article article = new Article();
+        article.setId(articleDto.getId());
+        article.setIdEntreprise(articleDto.getIdEntreprise());
         article.setCodeArticle(articleDto.getCodeArticle());
         article.setDesignation(articleDto.getDesignation());
         article.setPrixUnitaireHt(articleDto.getPrixUnitaireHt());

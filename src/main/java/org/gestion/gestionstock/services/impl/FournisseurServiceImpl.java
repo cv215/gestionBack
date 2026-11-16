@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FournisseurServiceImpl implements FournisseurService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.gestion.gestionstock.config.CurrentTenant currentTenant;
+
+
     private final FournisseurRepository fournisseurRepository;
     private final CommandeFournisseurRepository commandeFournisseurRepository;
 
@@ -34,10 +38,13 @@ public class FournisseurServiceImpl implements FournisseurService {
 
     @Override
     public FournisseurDto save(FournisseurDto fournisseurDto) {
+        if (fournisseurDto != null) {
+            fournisseurDto.setIdEntreprise(currentTenant.resolve(fournisseurDto.getIdEntreprise()));
+        }
         List<String> errors = FournisseurValidator.validate(fournisseurDto);
         if (!errors.isEmpty()){
             log.error("fournisseur is not valid {}", fournisseurDto);
-            throw new InvalidEntityException("le fournisseur n'est pas valide", ErrorCodes.FOURNISSEUR_NOT_FOUND, errors);
+            throw new InvalidEntityException("le fournisseur n'est pas valide", ErrorCodes.FOURNISSEUR_NOT_VALID, errors);
         }
         return FournisseurDto.fromEntity(
                 fournisseurRepository.save(
@@ -52,9 +59,9 @@ public class FournisseurServiceImpl implements FournisseurService {
             log.error("fournisseur ID is null");
             return null;
         }
-        Optional<Fournisseur> fournisseur = fournisseurRepository.findById(id);
-        return Optional.of(FournisseurDto
-                .fromEntity(fournisseur.get())).orElseThrow (
+        return fournisseurRepository.findById(id)
+                .map(FournisseurDto::fromEntity)
+                .orElseThrow(
                         () -> new EntityNotFoundException("aucun fournisseur avec ID = "+ id + "n'a été trouvé dans la BDD",
                                 ErrorCodes.FOURNISSEUR_NOT_FOUND)
                 );
@@ -63,6 +70,7 @@ public class FournisseurServiceImpl implements FournisseurService {
     @Override
     public List<FournisseurDto> findAll() {
         List<FournisseurDto> fournisseurDtos = fournisseurRepository.findAll().stream()
+                .filter(e -> currentTenant.owns(e.getIdEntreprise()))
                 .map((Object fournisseur) -> FournisseurDto.fromEntity((Fournisseur) fournisseur))
                 .collect(Collectors.toList());
         return fournisseurDtos;

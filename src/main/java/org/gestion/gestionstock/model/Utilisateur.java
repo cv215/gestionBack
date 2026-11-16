@@ -33,6 +33,7 @@ public class Utilisateur extends AbstractEntity implements UserDetails {
     @Column(name = "datenaissance")
     private LocalDate dateNaissance;
 
+    @lombok.ToString.Exclude
     @Column(name = "motdepasse")
     private String motDePasse;
 
@@ -52,6 +53,8 @@ public class Utilisateur extends AbstractEntity implements UserDetails {
     @JoinColumn(name = "identreprise")
     private Entreprise entreprise;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Roles> roles;
 

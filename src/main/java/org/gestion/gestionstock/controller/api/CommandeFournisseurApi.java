@@ -31,7 +31,7 @@ public interface CommandeFournisseurApi {
     })
     CommandeFournisseurDto save(@RequestBody CommandeFournisseurDto dto);
 
-    @PatchMapping(value = "/commandesfournisseurs/update/etat/{idCommande}/{etatCommande}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/commandesfournisseurs/update/etat/{idCommande}/{etatCommande}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Enregistrer une commandeFournisseur", description = "cette methode permet d'enregistrer ou modifier une commandeFournisseur")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object commandeFournisseur cree / modifier",
@@ -40,7 +40,7 @@ public interface CommandeFournisseurApi {
     })
     ResponseEntity<CommandeFournisseurDto> updateEtatCommande(@PathVariable("idCommande") Integer idCommande, @PathVariable("etatCommande") EtatCommande etatCommande);
 
-    @PatchMapping(value = "/commandesfournisseurs/update/article/{idCommande}/{idLigneCommande}/{idArticle}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/commandesfournisseurs/update/article/{idCommande}/{idLigneCommande}/{idArticle}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modifier un client dans la commande", description = "cette methode permet modifier un fournisseur de la commande")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object fournisseur de la commandeFournisseur cree / modifier",
@@ -51,7 +51,7 @@ public interface CommandeFournisseurApi {
                                                     @PathVariable("idArticle") Integer idArticle);
 
 
-    @PatchMapping(value = "/commandesfournisseurs/update/quantite/{idCommande}/{idLigneCommande}/{quantite}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/commandesfournisseurs/update/quantite/{idCommande}/{idLigneCommande}/{quantite}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Enregistrer une quantité de la commande client", description = "cette methode permet d'enregistrer ou modifier une quantité de la commande fournisseur")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object quantité de la commandeFournisseur cree / modifier",
@@ -62,7 +62,7 @@ public interface CommandeFournisseurApi {
                                                              @PathVariable("quantite") BigDecimal quantite);
 
 
-    @PatchMapping(value = "/commandesfournisseurs/update/fournisseur/{idCommande}/{idFournisseur}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/commandesfournisseurs/update/fournisseur/{idCommande}/{idFournisseur}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "modifier un fournisseur", description = "cette methode permet de modifier un fournisseur sur une commande")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object fournisseur cree / modifier",
@@ -82,7 +82,7 @@ public interface CommandeFournisseurApi {
     })
     CommandeFournisseurDto findById(@PathVariable("idCommandeFournisseur") Integer id);
 
-    @GetMapping(value = APP_ROOT + "/commandesfournisseurs/{codeCommandeFournisseur}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = APP_ROOT + "/commandesfournisseurs/code/{codeCommandeFournisseur}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Rechercher une commande fournisseur par code", description = "cette methode permet de chercher une comande fournisseur par son code")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "la commande fournisseur a ete trouve dans la BDD",

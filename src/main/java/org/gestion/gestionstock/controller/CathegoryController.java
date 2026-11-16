@@ -40,6 +40,6 @@ public class CathegoryController implements CathegoryApi {
 
     @Override
     public List<CathegoryDto> findAll() {
-        return List.of();
+        return cathegoryService.findAll();
     }
 }

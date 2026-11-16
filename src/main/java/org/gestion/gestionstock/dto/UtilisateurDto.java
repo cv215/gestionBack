@@ -1,26 +1,18 @@
 package org.gestion.gestionstock.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.gestion.gestionstock.model.Roles;
 import org.gestion.gestionstock.model.Utilisateur;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
-
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Builder
 @Data
-public class UtilisateurDto implements UserDetails {
+public class UtilisateurDto {
     private Integer id;
 
     private Integer idEntreprise;
@@ -31,6 +23,7 @@ public class UtilisateurDto implements UserDetails {
 
     private LocalDate dateNaissance;
 
+    @lombok.ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String motDePasse;
 
@@ -53,6 +46,8 @@ public class UtilisateurDto implements UserDetails {
         }
         return UtilisateurDto.builder()
                 .id(utilisateur.getId())
+                .idEntreprise(utilisateur.getEntreprise() != null ? utilisateur.getEntreprise().getId() : null)
+                .entreprise(EntrepriseDto.fromEntity(utilisateur.getEntreprise()))
                 .nom(utilisateur.getNom())
                 .prenom(utilisateur.getPrenom())
                 .dateNaissance(utilisateur.getDateNaissance())
@@ -64,11 +59,13 @@ public class UtilisateurDto implements UserDetails {
                 .adresse(AdresseDto.fromEntity(utilisateur.getAdresse()))
                 .build();
     }
+
     public static Utilisateur toEntity(UtilisateurDto utilisateurDto){
         if (utilisateurDto == null){
             return null;
         }
         Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setId(utilisateurDto.getId());
         utilisateur.setNom(utilisateurDto.getNom());
         utilisateur.setPrenom(utilisateurDto.getPrenom());
         utilisateur.setDateNaissance(utilisateurDto.getDateNaissance());
@@ -78,48 +75,5 @@ public class UtilisateurDto implements UserDetails {
         utilisateur.setAdresse(AdresseDto.toEntity(utilisateurDto.getAdresse()));
         utilisateur.setActif(utilisateurDto.isActif());
         return utilisateur;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (roles == null) {
-            return Collections.emptyList();
-        }
-        return roles.stream()
-                .filter(Objects::nonNull)
-                .map(Roles::getAuthority)
-                .filter(Objects::nonNull)
-                .map(SimpleGrantedAuthority::new)
-                .toList();
-    }
-
-    @Override
-    public String getPassword() {
-        return this.motDePasse;
-    }
-
-    @Override
-    public String getUsername() {
-        return this.email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return this.actif;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return this.actif;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return this.actif;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return this.actif;
     }
 }

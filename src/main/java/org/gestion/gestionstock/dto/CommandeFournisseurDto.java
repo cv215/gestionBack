@@ -1,6 +1,7 @@
 package org.gestion.gestionstock.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import org.gestion.gestionstock.model.CommandeFournisseur;
@@ -25,7 +26,7 @@ public class CommandeFournisseurDto {
 
     private FournisseurDto fournisseur;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<LigneCommandeFournisseurDto> ligneCommandeFournisseurs;
 
     public static CommandeFournisseurDto fromEntity(CommandeFournisseur commandeFournisseur){

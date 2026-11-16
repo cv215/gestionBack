@@ -53,6 +53,10 @@ public interface UtilisateurApi {
     })
     List<UtilisateurDto> findAll();
 
+    @PostMapping(value = UTILISATEUR_ENDPOINT + "/update/password", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Changer son mot de passe", description = "cette methode permet a l'utilisateur connecte de changer son mot de passe")
+    UtilisateurDto changerMotDePasse(@RequestBody org.gestion.gestionstock.dto.ChangerMotDePasseUtilisateurDto dto);
+
     @DeleteMapping(value = UTILISATEUR_ENDPOINT + "/delete/{idUtilisateur}")
     @Operation(summary = "Supprimer un utilisateur", description = "cette methode permet de supprimer un utilisateur par son ID")
     @ApiResponses(value = {

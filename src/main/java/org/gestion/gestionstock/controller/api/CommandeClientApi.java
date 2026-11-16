@@ -31,7 +31,7 @@ public interface CommandeClientApi {
     })
     CommandeClientDto save(@RequestBody CommandeClientDto dto);
 
-    @PatchMapping(value = "/commandesclients/update/etat/{idCommande}/{etatCommande}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/commandesclients/update/etat/{idCommande}/{etatCommande}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Enregistrer une commandeClient", description = "cette methode permet d'enregistrer ou modifier une commandeClient")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object commandeClient cree / modifier",
@@ -40,7 +40,7 @@ public interface CommandeClientApi {
     })
     ResponseEntity<CommandeClientDto> updateEtatCommande(@PathVariable("idCommande") Integer idCommande, @PathVariable("etatCommande") EtatCommande etatCommande);
 
-    @PatchMapping(value = "/commandesclients/update/article/{idCommande}/{idLigneCommande}/{idArticle}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/commandesclients/update/article/{idCommande}/{idLigneCommande}/{idArticle}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modifier un client dans la commande", description = "cette methode permet modifier un client de la commande")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object client de la commandeClient cree / modifier",
@@ -51,7 +51,7 @@ public interface CommandeClientApi {
                                                              @PathVariable("idArticle") Integer idArticle);
 
 
-    @PatchMapping(value = "/commandesclients/update/quantite/{idCommande}/{idLigneCommande}/{quantite}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/commandesclients/update/quantite/{idCommande}/{idLigneCommande}/{quantite}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Enregistrer une quantité de la commande client", description = "cette methode permet d'enregistrer ou modifier une quantité de la commande client")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object quantité de la commandeClient cree / modifier",
@@ -62,7 +62,7 @@ public interface CommandeClientApi {
                                                              @PathVariable("quantite")BigDecimal quantite);
 
 
-    @PatchMapping(value = "/commandesclients/update/client/{idCommande}/{idClient}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/commandesclients/update/client/{idCommande}/{idClient}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "modifier un client", description = "cette methode permet de modifier un client sur une commande")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "l'object client cree / modifier",
@@ -82,7 +82,7 @@ public interface CommandeClientApi {
     })
     CommandeClientDto findById(@PathVariable("idCommandeClient") Integer id);
 
-    @GetMapping(value = APP_ROOT + "/commandesclients/{codeCommandeClient}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = APP_ROOT + "/commandesclients/code/{codeCommandeClient}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Rechercher une commandeClient par code", description = "cette methode permet de chercher une commandeClient par son code")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "la commande client a ete trouve dans la BDD",

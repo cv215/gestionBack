@@ -28,7 +28,7 @@ public class FournisseurValidator {
         if (!StringUtils.hasLength(fournisseurDto.getEmail())){
             erros.add("veuillez renseigner email du fourniseur ");
         }
-        if (fournisseurDto.getNumTel() == null){
+        if (!StringUtils.hasLength(fournisseurDto.getNumTel())){
             erros.add("veuillez renseigner le numero de téléphone du fourniseur ");
         }
         erros.addAll(AdresseValidator.Validate(fournisseurDto.getAdresse()));

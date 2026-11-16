@@ -22,7 +22,7 @@ public class CommandeClientValodator {
         if (dto.getDateCommande() == null){
             errors.add("veuillez renseigner la date de la commande");
         }
-        if (!StringUtils.hasLength(dto.getEtatCommande().toString())){
+        if (dto.getEtatCommande() == null){
             errors.add("veuillez renseigner l'état de la commande");
         }
         if (dto.getClient()== null || dto.getClient().getId() == null){

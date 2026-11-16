@@ -42,12 +42,18 @@ public class Article extends AbstractEntity{
     @JoinColumn(name = "idcathegory")
     private Cathegory cathegory;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "article")
     private List<LigneVente> ligneVentes;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "article")
     private List<LigneCommandeClient> ligneCommandeClients;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "article")
     private List<LigneCommandeFournisseur> ligneCommandeFournisseurs;
 }

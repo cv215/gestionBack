@@ -37,6 +37,8 @@ public class Fournisseur extends AbstractEntity{
     @Column(name = "email")
     private String email;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "fournisseur")
     private List<CommandeFournisseur> commandeFournisseurs;
 }

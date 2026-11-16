@@ -69,4 +69,30 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(errorDto, badRequest);
     }
+
+    @ExceptionHandler({org.springframework.security.authentication.DisabledException.class,
+            org.springframework.security.authentication.LockedException.class,
+            org.springframework.security.authentication.AccountExpiredException.class,
+            org.springframework.security.authentication.CredentialsExpiredException.class})
+    public ResponseEntity<ErrorDto> handleAccountStatusException(org.springframework.security.core.AuthenticationException exception, WebRequest webRequest){
+        final HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        final ErrorDto errorDto = ErrorDto.builder()
+                .code(ErrorCodes.BAD_CREDENTIALS)
+                .httpCode(badRequest.value())
+                .message("Ce compte est désactivé. Contactez votre administrateur.")
+                .errors(Collections.singletonList("Ce compte est désactivé. Contactez votre administrateur."))
+                .build();
+        return new ResponseEntity<>(errorDto, badRequest);
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorDto> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException exception, WebRequest webRequest){
+        final HttpStatus conflict = HttpStatus.CONFLICT;
+        final ErrorDto errorDto = ErrorDto.builder()
+                .httpCode(conflict.value())
+                .message("Opération impossible : cet élément est lié à d'autres données.")
+                .errors(Collections.singletonList("Opération impossible : cet élément est lié à d'autres données."))
+                .build();
+        return new ResponseEntity<>(errorDto, conflict);
+    }
 }

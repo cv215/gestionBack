@@ -9,13 +9,16 @@ import java.util.List;
 public class UtilisateurValidator {
 
     public  static List<String> validate(UtilisateurDto utilisateurDto){
+        return validate(utilisateurDto, true);
+    }
+
+    public  static List<String> validate(UtilisateurDto utilisateurDto, boolean creation){
         List<String> erros = new ArrayList<>();
         if (utilisateurDto == null){
             erros.add("veuillez renseigner le nom de l'utilisateur ");
             erros.add("veuillez renseigner le prenom de l'utilisateur ");
             erros.add("veuillez renseigner le mot de passe de l'utilisateur ");
             erros.add("veuillez renseigner email de l'utilisateur ");
-            erros.add("veuillez renseigner la date de naissance de l'utilisateur ");
             erros.addAll(AdresseValidator.Validate(null));
             return erros;
         }
@@ -26,14 +29,11 @@ public class UtilisateurValidator {
         if (!StringUtils.hasLength(utilisateurDto.getPrenom())){
             erros.add("veuillez renseigner le prenom de l'utilisateur ");
         }
-        if (!StringUtils.hasLength(utilisateurDto.getMotDePasse())){
+        if (creation && !StringUtils.hasLength(utilisateurDto.getMotDePasse())){
             erros.add("veuillez renseigner le mot de passe de l'utilisateur ");
         }
         if (!StringUtils.hasLength(utilisateurDto.getEmail())){
             erros.add("veuillez renseigner email de l'utilisateur ");
-        }
-        if (utilisateurDto.getDateNaissance() == null){
-            erros.add("veuillez renseigner la date de naissance de l'utilisateur ");
         }
         erros.addAll(AdresseValidator.Validate(utilisateurDto.getAdresse()));
         return erros;

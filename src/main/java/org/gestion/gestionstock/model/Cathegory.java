@@ -27,6 +27,8 @@ public class Cathegory extends AbstractEntity{
     @Column(name = "designation")
     private  String designation;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "cathegory")
     private List<Article> articles;
 }

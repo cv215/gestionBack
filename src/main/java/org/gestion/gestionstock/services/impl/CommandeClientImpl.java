@@ -30,6 +30,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CommandeClientImpl implements CommandeClientService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.gestion.gestionstock.config.CurrentTenant currentTenant;
+
+
 
     private final CommandeClientRepository commandeClientRepository;
     private final LigneCommandeClientRepository ligneCommandeClientRepository;
@@ -47,7 +51,11 @@ public class CommandeClientImpl implements CommandeClientService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public CommandeClientDto save(CommandeClientDto dto) {
+        if (dto != null) {
+            dto.setIdEntreprise(currentTenant.resolve(dto.getIdEntreprise()));
+        }
         List<String> errors = CommandeClientValodator.validate(dto);
 
         if (!errors.isEmpty()){
@@ -60,19 +68,28 @@ public class CommandeClientImpl implements CommandeClientService {
         }
         Optional<Client> client = clientRepository.findById(dto.getClient().getId());
 
-        if (!client.isEmpty()){
+        if (client.isEmpty()){
             log.warn("client with ID {} was not found in the DB", dto.getClient().getId());
-            throw new EntityNotFoundException("aucun client avec L'ID "+ dto.getClient().getId() + "n'a ete trouve dans la BDD", ErrorCodes.CLIENT_NOT_FOUND);
+            throw new EntityNotFoundException("aucun client avec L'ID "+ dto.getClient().getId() + " n'a ete trouve dans la BDD", ErrorCodes.CLIENT_NOT_FOUND);
         }
+        Optional<CommandeClient> sameCode = commandeClientRepository.findCommandeClientByCode(dto.getCode().trim());
+        if (sameCode.isPresent() && !sameCode.get().getId().equals(dto.getId())) {
+            throw new InvalidEntityException("la commande client n'est pas valide", ErrorCodes.COMMANDE_CLIENT_NOT_VALID,
+                    List.of("Une commande avec le code " + dto.getCode().trim() + " existe déjà"));
+        }
+        dto.setCode(dto.getCode().trim());
 
         List<String> articleErrors = new ArrayList<>();
 
         if (dto.getLigneCommandeClients() != null){
             dto.getLigneCommandeClients().forEach(ligCodClt ->{
-                if (ligCodClt.getArticle() != null){
+                if (ligCodClt.getArticle() != null && ligCodClt.getArticle().getId() != null){
                     Optional<Article> article = articleRepository.findById(ligCodClt.getArticle().getId());
                     if (article.isEmpty()){
-                        articleErrors.add("l'article avec l'ID " + ligCodClt.getArticle().getId() + "n'existe pas");
+                        articleErrors.add("l'article avec l'ID " + ligCodClt.getArticle().getId() + " n'existe pas");
+                    }
+                    if (ligCodClt.getQuantite() == null || ligCodClt.getQuantite().compareTo(BigDecimal.ZERO) <= 0){
+                        articleErrors.add("la quantité de chaque ligne doit être supérieure à zéro");
                     }
                 }else {
                     articleErrors.add("impossible d'enregistere une commande avec un article null");
@@ -91,6 +108,12 @@ public class CommandeClientImpl implements CommandeClientService {
             dto.getLigneCommandeClients().forEach(ligCodClt -> {
                 LigneCommandeClient ligneCommandeClient = LigneCommandeClientDto.toEntity(ligCodClt);
                 ligneCommandeClient.setCommandeClient(saveCodClt);
+                ligneCommandeClient.setIdEntreprise(saveCodClt.getIdEntreprise());
+                Article article = articleRepository.findById(ligCodClt.getArticle().getId()).orElseThrow();
+                ligneCommandeClient.setArticle(article);
+                if (ligneCommandeClient.getPrixUnitaire() == null) {
+                    ligneCommandeClient.setPrixUnitaire(article.getPrixUnitaireTtc());
+                }
                 ligneCommandeClientRepository.save(ligneCommandeClient);
             });
         }
@@ -99,9 +122,10 @@ public class CommandeClientImpl implements CommandeClientService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public CommandeClientDto updateEtatCommande(Integer idCommande, EtatCommande etatCommande) {
         checkIdCommande(idCommande);
-        if (!StringUtils.hasLength(String.valueOf(etatCommande))) {
+        if (etatCommande == null) {
             log.error("l'état de la commade client est null");
             throw new InvalidOperationException("Impossible de modifier l'état de la commande avec un etat null", ErrorCodes.COMMANDE_CLIENT_NON_MODIFIABLE);
         }
@@ -239,6 +263,7 @@ public class CommandeClientImpl implements CommandeClientService {
     @Override
     public List<CommandeClientDto> findAll() {
         return commandeClientRepository.findAll().stream()
+                .filter(e -> currentTenant.owns(e.getIdEntreprise()))
                 .map(CommandeClientDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -249,10 +274,12 @@ public class CommandeClientImpl implements CommandeClientService {
             log.error("commandeClient ID is null");
             return;
         }
-        List<LigneCommandeClient> ligneCommandeClients = ligneCommandeClientRepository.findAllByCommandeClientId(id);
-        if (!ligneCommandeClients.isEmpty()){
-            throw new InvalidOperationException("Impossible de supprimer une commande client déjà utilisé",ErrorCodes.COMMANDE_CLIENT_ALREADY_IN_USE);
+        CommandeClientDto commande = findById(id);
+        if (commande.isCommandeLivree()){
+            throw new InvalidOperationException("Impossible de supprimer une commande client déjà livrée",ErrorCodes.COMMANDE_CLIENT_ALREADY_IN_USE);
         }
+        // Une commande non livrée n'a généré aucun mouvement de stock : on supprime ses lignes puis la commande.
+        ligneCommandeClientRepository.deleteAll(ligneCommandeClientRepository.findAllByCommandeClientId(id));
         commandeClientRepository.deleteById(id);
     }
 

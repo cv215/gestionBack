@@ -31,6 +31,7 @@ public class Entreprise extends AbstractEntity{
     @Column(name = "codefiscale")
     private String codeFiscale;
 
+    @lombok.ToString.Exclude
     @Column(name = "motdepasse")
     private String motDePasse;
 
@@ -46,6 +47,8 @@ public class Entreprise extends AbstractEntity{
     @Column(name = "siteWeb")
     private String siteWeb;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "entreprise")
     private List<Utilisateur> utilisateurs;
 }

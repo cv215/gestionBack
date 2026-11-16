@@ -36,7 +36,7 @@ public interface CathegoryApi {
     })
     CathegoryDto findById(@PathVariable("idCathegory") Integer idCathegory);
 
-    @GetMapping(value = APP_ROOT + "/cathegory/{codeCathegory}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = APP_ROOT + "/cathegory/code/{codeCathegory}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Rechercher une cathegory par code", description = "cette methode permet de chercher une cathegory par son code")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "la cathegory a ete trouve dans la BDD",

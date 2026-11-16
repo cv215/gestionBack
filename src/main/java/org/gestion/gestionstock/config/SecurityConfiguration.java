@@ -59,7 +59,7 @@ public class SecurityConfiguration {
                                         "/utilisateurs/inscription").permitAll()
                                 .requestMatchers("/error").permitAll()
                                 .requestMatchers(HttpMethod.POST,
-                                        "/auth/connexion").permitAll()
+                                        "/auth/connexion", "/auth/mot-de-passe-oublie").permitAll()
                                 .requestMatchers(
                                         "/v3/api-docs/**",
                                         "/swagger-ui.html",

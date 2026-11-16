@@ -40,6 +40,8 @@ public class LigneCommandeClientDto {
             return null;
         }
         LigneCommandeClient ligneCommandeClient = new LigneCommandeClient();
+        ligneCommandeClient.setId(ligneCommandeClientDto.getId());
+        ligneCommandeClient.setIdEntreprise(ligneCommandeClientDto.getIdEntreprise());
         ligneCommandeClient.setQuantite(ligneCommandeClientDto.getQuantite());
         ligneCommandeClient.setPrixUnitaire(ligneCommandeClientDto.getPrixUnitaire());
         ligneCommandeClient.setArticle(ArticleDto.toEntity(ligneCommandeClientDto.getArticle()));

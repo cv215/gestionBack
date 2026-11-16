@@ -26,6 +26,7 @@ public class FournisseurDto {
 
     private String email;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<CommandeFournisseurDto> commandeFournisseurs;
 
     public static FournisseurDto fromEntity(Fournisseur fournisseur){
@@ -48,6 +49,8 @@ public class FournisseurDto {
             return null;
         }
         Fournisseur fournisseur = new Fournisseur();
+        fournisseur.setId(fournisseurDto.getId());
+        fournisseur.setIdEntreprise(fournisseurDto.getIdEntreprise());
         fournisseur.setNom(fournisseurDto.getNom());
         fournisseur.setPrenom(fournisseurDto.getPrenom());
         fournisseur.setPhoto(fournisseurDto.getPhoto());

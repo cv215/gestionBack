@@ -31,6 +31,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ArticleServiceImpl implements ArticleService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.gestion.gestionstock.config.CurrentTenant currentTenant;
+
+
     private ArticleRepository articleRepository;
     private  LigneVenteRepository venteRepository;
     private LigneCommandeClientRepository commandeClientRepository;
@@ -47,10 +51,19 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public ArticleDto save(ArticleDto dto) {
+        if (dto != null) {
+            dto.setIdEntreprise(currentTenant.resolve(dto.getIdEntreprise()));
+        }
         List<String> errors = ArticleValidator.validate(dto);
         if (!errors.isEmpty()){
             log.error("Article is not valid {}", dto);
-            throw new InvalidEntityException("l'article n'est pas valide", ErrorCodes.ARTICLE_NOT_FOUND, errors);
+            throw new InvalidEntityException("l'article n'est pas valide", ErrorCodes.ARTICLE_NOT_VALID, errors);
+        }
+        dto.setCodeArticle(dto.getCodeArticle().trim());
+        Optional<Article> sameCode = articleRepository.findArticleByCodeArticle(dto.getCodeArticle());
+        if (sameCode.isPresent() && !sameCode.get().getId().equals(dto.getId())) {
+            throw new InvalidEntityException("l'article n'est pas valide", ErrorCodes.ARTICLE_ALREADY_IN_USE,
+                    List.of("Un article avec le code " + dto.getCodeArticle() + " existe déjà"));
         }
         return ArticleDto.fromEntity(
                 articleRepository.save(
@@ -66,10 +79,9 @@ public class ArticleServiceImpl implements ArticleService {
             return null;
         }
 
-        Optional<Article> article = articleRepository.findById(id);
-
-        return Optional.of(ArticleDto.
-                fromEntity(article.get())).orElseThrow(
+        return articleRepository.findById(id)
+                .map(ArticleDto::fromEntity)
+                .orElseThrow(
                 () -> new EntityNotFoundException(
                         "Aucun article avec l'ID = " + id + "n'a été trouvé dans la BBD",
                         ErrorCodes.ARTICLE_NOT_FOUND)
@@ -82,9 +94,9 @@ public class ArticleServiceImpl implements ArticleService {
             log.error("article CODE is null");
             return null;
         }
-        Optional<Article> article = articleRepository.findArticleByCodeArticle(codeArticle);
-
-        return Optional.of(ArticleDto.fromEntity(article.get())).orElseThrow(
+        return articleRepository.findArticleByCodeArticle(codeArticle)
+                .map(ArticleDto::fromEntity)
+                .orElseThrow(
                 () -> new EntityNotFoundException(
                         "Aucun article avec le CODE = " + codeArticle + "n'a été trouvé dans la BBD",
                         ErrorCodes.ARTICLE_NOT_FOUND)
@@ -94,6 +106,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public List<ArticleDto> findAll() {
         return articleRepository.findAll().stream()
+                .filter(e -> currentTenant.owns(e.getIdEntreprise()))
                 .map(ArticleDto::fromEntity)
                 .collect(Collectors.toList());
     }

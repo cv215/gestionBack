@@ -26,6 +26,7 @@ public class ClientDto {
 
     private String email;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<CommandeClientDto> commandeClients;
 
     public static ClientDto fromEntity(Client client){
@@ -41,8 +42,6 @@ public class ClientDto {
                 .numTel(client.getNumTel())
                 .email(client.getEmail())
                 .adresse(AdresseDto.fromEntity(client.getAdresse()))
-                .commandeClients(client.getCommandeClients().stream()
-                        .map(CommandeClientDto::fromEntity).collect(Collectors.toList()))
                 .build();
     }
     public static Client toEntity(ClientDto clientDto){
@@ -50,13 +49,14 @@ public class ClientDto {
             return null;
         }
         Client client = new Client();
+        client.setId(clientDto.getId());
+        client.setIdEntreprise(clientDto.getIdEntreprise());
         client.setNom(clientDto.getNom());
         client.setPrenom(clientDto.getPrenom());
         client.setPhoto(clientDto.getPhoto());
         client.setNumTel(clientDto.getNumTel());
         client.setEmail(clientDto.getEmail());
         client.setAdresse(AdresseDto.toEntity(clientDto.getAdresse()));
-        client.setCommandeClients(client.getCommandeClients());
         return client;
     }
 }

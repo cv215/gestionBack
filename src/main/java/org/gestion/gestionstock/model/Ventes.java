@@ -31,6 +31,8 @@ public class Ventes extends AbstractEntity{
     @Column(name = "commentaire")
     private String commentaire;
 
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "vente")
     private List<LigneVente> ligneVentes;
 }

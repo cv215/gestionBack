@@ -35,8 +35,8 @@ public class VentesDto {
                 .idEntreprise(ventes.getIdEntreprise())
                 .dateVente(ventes.getDateVente())
                 .commentaire(ventes.getCommentaire())
-                .ligneVentes(ventes.getLigneVentes().stream()
-                        .map(LigneVenteDto::fromEntity).collect(Collectors.toList()))
+                .ligneVentes(ventes.getLigneVentes() == null ? new java.util.ArrayList<>() : ventes.getLigneVentes().stream()
+                        .map(LigneVenteDto::fromEntityWithoutVente).collect(Collectors.toList()))
                 .build();
     }
     public static Ventes toEntity(VentesDto ventesDto){
@@ -44,10 +44,11 @@ public class VentesDto {
             return null;
         }
         Ventes ventes = new Ventes();
-        ventes.setCode(ventes.getCode());
+        ventes.setId(ventesDto.getId());
+        ventes.setIdEntreprise(ventesDto.getIdEntreprise());
+        ventes.setCode(ventesDto.getCode());
         ventes.setDateVente(ventesDto.getDateVente());
         ventes.setCommentaire(ventesDto.getCommentaire());
-        ventes.setLigneVentes(ventes.getLigneVentes());
         return ventes;
     }
 }

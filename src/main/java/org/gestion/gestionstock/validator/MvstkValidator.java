@@ -31,7 +31,7 @@ public class MvstkValidator {
             erros.add("veuillez renseigner l'article du mouvement de stock");
         }
 
-        if (!StringUtils.hasLength(mvstkDto.getTypeMvstkt().name())){
+        if (mvstkDto.getTypeMvstkt() == null){
             erros.add("veuillez renseigner le type du mouvement de stock");
         }
         
