@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   datasource:
     url: jdbc:mysql://localhost:3306/dbgestionstock?createDatabaseIfNotExist=true
     username: root
@@ -20,15 +24,10 @@ server:
   servlet:
     context-path: /gestiondestock/v1
 
-flickr:
-  apiKey: 4bcf93be859f17ed581198c1eca2443f
-  apiSecret: 5ad8c09cb3dbcee6
-  appKey: 72157720957728470-a8077c1c4838ab4b
-  appSecret: ba7c7eed4f30c443
 
 app:
   jwt:
-    secret-key: 173b75e3ae41a9a617f2fdc796ffa7d758d0c3a106102fd9b47de56bcac6d749
+    secret-key: ${JWT_SECRET:173b75e3ae41a9a617f2fdc796ffa7d758d0c3a106102fd9b47de56bcac6d749}
   application-time: 900000
 
 logging:

@@ -8,7 +8,9 @@ import org.gestion.gestionstock.exception.EntityNotFoundException;
 import org.gestion.gestionstock.exception.ErrorCodes;
 import org.gestion.gestionstock.exception.InvalidEntityException;
 import org.gestion.gestionstock.exception.InvalidOperationException;
+import org.gestion.gestionstock.model.Client;
 import org.gestion.gestionstock.model.Entreprise;
+import org.gestion.gestionstock.model.Fournisseur;
 import org.gestion.gestionstock.model.Roles;
 import org.gestion.gestionstock.model.Utilisateur;
 import org.gestion.gestionstock.repository.UtilisateurRepository;
@@ -34,12 +36,32 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UtilisateurServiceImpl implements UtilisateurService{
 
+    /** Rôles qu'un administrateur peut attribuer à un membre de son équipe. */
+    private static final java.util.Set<TypeRole> ROLES_EQUIPE = java.util.EnumSet.of(
+            TypeRole.ADMIN_ENTREPRISE, TypeRole.GESTIONNAIRE_STOCK, TypeRole.COMMERCIAL,
+            TypeRole.CAISSIER, TypeRole.UTILISATEUR);
+
     private final UtilisateurRepository utilisateurRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final org.gestion.gestionstock.repository.EntrepriseRepository entrepriseRepository;
+    private final org.gestion.gestionstock.repository.ClientRepository clientRepository;
+    private final org.gestion.gestionstock.repository.FournisseurRepository fournisseurRepository;
 
-    public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository, BCryptPasswordEncoder passwordEncoder) {
+    @org.springframework.beans.factory.annotation.Autowired
+    public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository, BCryptPasswordEncoder passwordEncoder,
+                                  org.gestion.gestionstock.repository.EntrepriseRepository entrepriseRepository,
+                                  org.gestion.gestionstock.repository.ClientRepository clientRepository,
+                                  org.gestion.gestionstock.repository.FournisseurRepository fournisseurRepository) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
+        this.entrepriseRepository = entrepriseRepository;
+        this.clientRepository = clientRepository;
+        this.fournisseurRepository = fournisseurRepository;
+    }
+
+    /** Constructeur simplifié (tests unitaires sans inscription de partenaire). */
+    public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository, BCryptPasswordEncoder passwordEncoder) {
+        this(utilisateurRepository, passwordEncoder, null, null, null);
     }
 
     @Override
@@ -68,7 +90,13 @@ public class UtilisateurServiceImpl implements UtilisateurService{
                 throw new InvalidOperationException("Vous devez être connecté pour modifier un utilisateur",
                         ErrorCodes.UTILISATEUR_NOT_VALID);
             }
+            boolean soiMeme = utilisateurDto.getId().equals(requester.get().getId());
+            if (!soiMeme && !hasRole(requester.get(), TypeRole.ADMIN_ENTREPRISE)) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "Vous ne pouvez modifier que votre propre compte");
+            }
             Utilisateur utilisateur = utilisateurRepository.findById(utilisateurDto.getId())
+                    .filter(u -> soiMeme || sameEntreprise(u, requester.get()))
                     .orElseThrow(() -> new EntityNotFoundException(
                             "Aucun utilisateur avec l'ID = " + utilisateurDto.getId() + " n'a été trouvé dans la BDD",
                             ErrorCodes.UTILISATEUR_NOT_FOUND));
@@ -91,15 +119,34 @@ public class UtilisateurServiceImpl implements UtilisateurService{
 
         TypeRole role;
         if (requester.isPresent()) {
-            // Création par un utilisateur connecté : le nouveau compte appartient à la même entreprise.
-            utilisateur.setEntreprise(requester.get().getEntreprise());
-            role = requestedRole(utilisateurDto).orElse(TypeRole.UTILISATEUR);
-            if (role == TypeRole.ADMIN_ENTREPRISE && !hasRole(requester.get(), TypeRole.ADMIN_ENTREPRISE)) {
-                role = TypeRole.UTILISATEUR;
+            // Création d'un membre de l'équipe : réservée à l'administrateur, dans sa propre entreprise.
+            if (!hasRole(requester.get(), TypeRole.ADMIN_ENTREPRISE)) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "Seul un administrateur peut créer des utilisateurs");
             }
+            utilisateur.setEntreprise(requester.get().getEntreprise());
+            role = requestedRole(utilisateurDto)
+                    .filter(ROLES_EQUIPE::contains)
+                    .orElse(TypeRole.UTILISATEUR);
         } else {
-            // Inscription publique : toujours un compte client, jamais un rôle privilégié.
-            role = TypeRole.CLIENT;
+            // Inscription publique : compte client ou fournisseur rattaché à une entreprise existante,
+            // jamais un rôle interne.
+            role = requestedRole(utilisateurDto).filter(r -> r == TypeRole.FOURNISSEUR).orElse(TypeRole.CLIENT);
+            Integer idEntreprise = utilisateurDto.getIdEntreprise() != null
+                    ? utilisateurDto.getIdEntreprise()
+                    : (utilisateurDto.getEntreprise() != null ? utilisateurDto.getEntreprise().getId() : null);
+            List<String> partnerErrors = new ArrayList<>();
+            Entreprise entreprise = idEntreprise == null ? null : entrepriseRepository.findById(idEntreprise).orElse(null);
+            if (entreprise == null) {
+                partnerErrors.add("veuillez choisir l'entreprise avec laquelle vous travaillez");
+            }
+            if (!StringUtils.hasText(utilisateurDto.getNumTel())) {
+                partnerErrors.add("veuillez renseigner votre numéro de téléphone");
+            }
+            if (!partnerErrors.isEmpty()) {
+                throw new InvalidEntityException("L'utilisateur n'est pas valide", ErrorCodes.UTILISATEUR_NOT_VALID, partnerErrors);
+            }
+            utilisateur.setEntreprise(entreprise);
         }
 
         Roles roles = new Roles();
@@ -109,7 +156,45 @@ public class UtilisateurServiceImpl implements UtilisateurService{
         roles.setUtilisateur(utilisateur);
         utilisateur.setRoles(new ArrayList<>(List.of(roles)));
 
-        return UtilisateurDto.fromEntity(utilisateurRepository.save(utilisateur));
+        Utilisateur saved = utilisateurRepository.save(utilisateur);
+        if (role == TypeRole.CLIENT || role == TypeRole.FOURNISSEUR) {
+            creerFichePartenaire(saved, role, utilisateurDto.getNumTel());
+        }
+        return UtilisateurDto.fromEntity(saved);
+    }
+
+    /**
+     * Crée la fiche client ou fournisseur correspondant au compte, dans l'entreprise choisie,
+     * pour que l'entreprise le voie dans ses listes et puisse lui associer des commandes.
+     * Une fiche existante avec le même e-mail est réutilisée.
+     */
+    private void creerFichePartenaire(Utilisateur utilisateur, TypeRole role, String numTel) {
+        if (utilisateur.getEntreprise() == null || clientRepository == null || fournisseurRepository == null) {
+            return;
+        }
+        Integer idEntreprise = utilisateur.getEntreprise().getId();
+        String telephone = numTel == null ? null : numTel.trim();
+        if (role == TypeRole.CLIENT) {
+            if (clientRepository.findFirstByEmailIgnoreCaseAndIdEntreprise(utilisateur.getEmail(), idEntreprise).isEmpty()) {
+                Client client = new Client();
+                client.setIdEntreprise(idEntreprise);
+                client.setNom(utilisateur.getNom());
+                client.setPrenom(utilisateur.getPrenom());
+                client.setEmail(utilisateur.getEmail());
+                client.setNumTel(telephone);
+                client.setAdresse(utilisateur.getAdresse());
+                clientRepository.save(client);
+            }
+        } else if (fournisseurRepository.findFirstByEmailIgnoreCaseAndIdEntreprise(utilisateur.getEmail(), idEntreprise).isEmpty()) {
+            Fournisseur fournisseur = new Fournisseur();
+            fournisseur.setIdEntreprise(idEntreprise);
+            fournisseur.setNom(utilisateur.getNom());
+            fournisseur.setPrenom(utilisateur.getPrenom());
+            fournisseur.setEmail(utilisateur.getEmail());
+            fournisseur.setNumTel(telephone);
+            fournisseur.setAdresse(utilisateur.getAdresse());
+            fournisseurRepository.save(fournisseur);
+        }
     }
 
     @Override
@@ -150,12 +235,21 @@ public class UtilisateurServiceImpl implements UtilisateurService{
             throw new InvalidOperationException("Vous ne pouvez pas supprimer votre propre compte",
                     ErrorCodes.UTILISATEUR_NOT_VALID);
         }
+        if (requester.isPresent() && utilisateurRepository.findById(id)
+                .filter(u -> sameEntreprise(u, requester.get())).isEmpty()) {
+            throw new EntityNotFoundException("Aucun utilisateur avec l'ID = " + id, ErrorCodes.UTILISATEUR_NOT_FOUND);
+        }
         utilisateurRepository.deleteById(id);
     }
 
     @Override
     public UtilisateurDto findByEmail(String email) {
+        Optional<Utilisateur> requester = currentUser();
         return utilisateurRepository.findUtilisateurByEmail(normalizeEmail(email))
+                // Chacun peut lire son propre profil ; l'administrateur, ceux de son entreprise.
+                .filter(u -> requester.isEmpty()
+                        || u.getId().equals(requester.get().getId())
+                        || (hasRole(requester.get(), TypeRole.ADMIN_ENTREPRISE) && sameEntreprise(u, requester.get())))
                 .map(UtilisateurDto::fromEntity)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Aucun utilisateur avec l'email = " + email + " n'a été trouvé dans la BDD",ErrorCodes.UTILISATEUR_NOT_FOUND)
@@ -236,6 +330,11 @@ public class UtilisateurServiceImpl implements UtilisateurService{
     private static boolean hasRole(Utilisateur utilisateur, TypeRole role) {
         return utilisateur.getRoles() != null && utilisateur.getRoles().stream()
                 .anyMatch(r -> r != null && role == r.getLibelle());
+    }
+
+    private static boolean sameEntreprise(Utilisateur a, Utilisateur b) {
+        return a.getEntreprise() != null && b.getEntreprise() != null
+                && Objects.equals(a.getEntreprise().getId(), b.getEntreprise().getId());
     }
 
     private static String normalizeEmail(String email) {

@@ -31,6 +31,9 @@ public class EntrepriseServiceImpl implements EntrepriseService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
+    private org.gestion.gestionstock.config.CurrentTenant currentTenant;
+
+    @Autowired
     public EntrepriseServiceImpl(EntrepriseRepository entrepriseRepository,UtilisateurRepository utilisateurRepository, BCryptPasswordEncoder passwordEncoder) {
         this.entrepriseRepository = entrepriseRepository;
         this.passwordEncoder = passwordEncoder;
@@ -97,10 +100,11 @@ public class EntrepriseServiceImpl implements EntrepriseService {
         }
 
         return entrepriseRepository.findById(id)
+                .filter(e -> currentTenant.owns(e.getId()))
                 .map(EntrepriseDto::fromEntity)
                 .orElseThrow(
                 () -> new EntityNotFoundException(
-                        "Aucune entreprise avec l'ID = " + id + "n'a été trouvé dans la BBD",
+                        "Aucune entreprise avec l'ID = " + id + " n'a été trouvée",
                         ErrorCodes.ENTREPRISE_NOT_FOUND)
         );
     }
@@ -108,7 +112,17 @@ public class EntrepriseServiceImpl implements EntrepriseService {
     @Override
     public List<EntrepriseDto> findAll() {
         return entrepriseRepository.findAll().stream()
+                .filter(e -> currentTenant.owns(e.getId()))
                 .map(EntrepriseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /** Liste minimale (id, nom) pour le formulaire d'inscription des clients et fournisseurs. */
+    @Override
+    public List<java.util.Map<String, Object>> findAllPublic() {
+        return entrepriseRepository.findAll().stream()
+                .sorted(java.util.Comparator.comparing(e -> e.getNom() == null ? "" : e.getNom().toLowerCase()))
+                .map(e -> java.util.Map.<String, Object>of("id", e.getId(), "nom", e.getNom() == null ? "" : e.getNom()))
                 .collect(Collectors.toList());
     }
 
@@ -118,6 +132,7 @@ public class EntrepriseServiceImpl implements EntrepriseService {
             log.error("Entreprise ID is null");
             return ;
         }
+        findById(id);
         entrepriseRepository.deleteById(id);
     }
     }

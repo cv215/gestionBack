@@ -26,8 +26,14 @@ public class JetUtils {
     }
 
     public String generateToken(String username) {
+        return generateToken(username, java.util.List.of());
+    }
+
+    /** Le claim "roles" (ex. ROLE_ADMIN_ENTREPRISE) sert aux contrôles d'accès de l'API. */
+    public String generateToken(String username, java.util.Collection<String> roles) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("roles", java.util.List.copyOf(roles))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

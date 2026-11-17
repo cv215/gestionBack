@@ -12,4 +12,6 @@ public interface EntrepriseService {
     List<EntrepriseDto> findAll();
 
     void delete(Integer id);
+
+    List<java.util.Map<String, Object>> findAllPublic();
 }

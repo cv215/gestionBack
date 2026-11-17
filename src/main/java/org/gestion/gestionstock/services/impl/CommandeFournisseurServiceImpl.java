@@ -234,6 +234,7 @@ public class CommandeFournisseurServiceImpl implements CommandeFournisseurServic
             return null;
         }
         return commandeFournisseurRepository.findById(id)
+                .filter(this::visible)
                 .map(CommandeFournisseurDto::fromEntity)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "aucune commande fournisseur n'a ete trouve avec l'ID" +id, ErrorCodes.COMMANDE_FOURNISSEUR_NOT_FOUND
@@ -246,6 +247,7 @@ public class CommandeFournisseurServiceImpl implements CommandeFournisseurServic
             return null;
         }
         return commandeFournisseurRepository.findCommandeFournisseurByCode(code)
+                .filter(this::visible)
                 .map(CommandeFournisseurDto::fromEntity)
                 .orElseThrow(()-> new EntityNotFoundException(
                         "aucune commande Fournisseur n'a ete trouve avec le code" +code, ErrorCodes.COMMANDE_FOURNISSEUR_NOT_FOUND
@@ -255,7 +257,7 @@ public class CommandeFournisseurServiceImpl implements CommandeFournisseurServic
     @Override
     public List<CommandeFournisseurDto> findAll() {
         return commandeFournisseurRepository.findAll().stream()
-                .filter(e -> currentTenant.owns(e.getIdEntreprise()))
+                .filter(this::visible)
                 .map(CommandeFournisseurDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -277,6 +279,7 @@ public class CommandeFournisseurServiceImpl implements CommandeFournisseurServic
 
     @Override
     public List<LigneCommandeFournisseurDto> findAllLigneCommandeFournisseurByCommandeFournisseurId(Integer idCommande) {
+        findById(idCommande); // vérifie que la commande est visible pour l'utilisateur connecté
         return ligneCommandeFournisseurRepository.findAllByCommandeFournisseurId(idCommande)
                 .stream().map(LigneCommandeFournisseurDto::fromEntity)
                 .collect(Collectors.toList());
@@ -323,5 +326,17 @@ public class CommandeFournisseurServiceImpl implements CommandeFournisseurServic
                     .build();
             mvstkService.entreeStock(mvstkDto);
         });
+    }
+
+    /** Commande de l'entreprise courante ; pour un fournisseur connecté, uniquement celles qui lui sont adressées. */
+    private boolean visible(CommandeFournisseur commande) {
+        if (!currentTenant.owns(commande.getIdEntreprise())) {
+            return false;
+        }
+        if (currentTenant.isPartenaireExterne()) {
+            String email = currentTenant.email().orElse("");
+            return commande.getFournisseur() != null && email.equalsIgnoreCase(commande.getFournisseur().getEmail());
+        }
+        return true;
     }
 }

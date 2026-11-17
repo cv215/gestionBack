@@ -55,6 +55,16 @@ public class CommandeClientImpl implements CommandeClientService {
     public CommandeClientDto save(CommandeClientDto dto) {
         if (dto != null) {
             dto.setIdEntreprise(currentTenant.resolve(dto.getIdEntreprise()));
+            if (currentTenant.isPartenaireExterne()) {
+                // Un client connecté ne peut passer qu'une nouvelle commande, en son propre nom.
+                String email = currentTenant.email().orElse("");
+                Client moi = clientRepository.findFirstByEmailIgnoreCaseAndIdEntreprise(email, dto.getIdEntreprise())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Aucune fiche client n'est associée à votre compte", ErrorCodes.CLIENT_NOT_FOUND));
+                dto.setId(null);
+                dto.setEtatCommande(EtatCommande.EN_COURS);
+                dto.setClient(ClientDto.fromEntity(moi));
+            }
         }
         List<String> errors = CommandeClientValodator.validate(dto);
 
@@ -242,9 +252,10 @@ public class CommandeClientImpl implements CommandeClientService {
             return null;
         }
         return commandeClientRepository.findById(id)
+                .filter(this::visible)
                 .map(CommandeClientDto::fromEntity)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "aucune commande client n'a ete trouve avec l'ID" +id, ErrorCodes.COMMANDE_CLIENT_NOT_FOUND
+                        "aucune commande client n'a ete trouve avec l'ID " +id, ErrorCodes.COMMANDE_CLIENT_NOT_FOUND
                 ));
     }
 
@@ -254,6 +265,7 @@ public class CommandeClientImpl implements CommandeClientService {
             return null;
         }
         return commandeClientRepository.findCommandeClientByCode(code)
+                .filter(this::visible)
                 .map(CommandeClientDto::fromEntity)
                 .orElseThrow(()-> new EntityNotFoundException(
                         "aucune commande client n'a ete trouve avec le code" +code, ErrorCodes.COMMANDE_CLIENT_NOT_FOUND
@@ -263,9 +275,21 @@ public class CommandeClientImpl implements CommandeClientService {
     @Override
     public List<CommandeClientDto> findAll() {
         return commandeClientRepository.findAll().stream()
-                .filter(e -> currentTenant.owns(e.getIdEntreprise()))
+                .filter(this::visible)
                 .map(CommandeClientDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    /** Commande de l'entreprise courante ; pour un client connecté, uniquement ses propres commandes. */
+    private boolean visible(CommandeClient commande) {
+        if (!currentTenant.owns(commande.getIdEntreprise())) {
+            return false;
+        }
+        if (currentTenant.isPartenaireExterne()) {
+            String email = currentTenant.email().orElse("");
+            return commande.getClient() != null && email.equalsIgnoreCase(commande.getClient().getEmail());
+        }
+        return true;
     }
 
     @Override
@@ -285,6 +309,7 @@ public class CommandeClientImpl implements CommandeClientService {
 
     @Override
     public List<LigneCommandeClientDto> findAllLigneCommandeClientByCommandeClientId(Integer idCommande){
+        findById(idCommande); // vérifie que la commande est visible pour l'utilisateur connecté
         return ligneCommandeClientRepository.findAllByCommandeClientId(idCommande)
                 .stream().map(LigneCommandeClientDto::fromEntity)
                 .collect(Collectors.toList());

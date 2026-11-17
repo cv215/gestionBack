@@ -38,6 +38,9 @@ public class UtilisateurDto {
 
     private String email;
 
+    /** Téléphone : utilisé uniquement à l'inscription pour créer la fiche client ou fournisseur. */
+    private String numTel;
+
     private EntrepriseDto entreprise;
 
     public static UtilisateurDto fromEntity(Utilisateur utilisateur){

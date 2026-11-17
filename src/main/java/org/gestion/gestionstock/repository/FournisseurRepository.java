@@ -9,4 +9,7 @@ import org.springframework.stereotype.Repository;
 public interface FournisseurRepository extends JpaRepository<Fournisseur,Integer> {
 
     void deleteById(@NonNull Integer id);
+
+    java.util.Optional<Fournisseur> findFirstByEmailIgnoreCaseAndIdEntreprise(String email, Integer idEntreprise);
+
 }

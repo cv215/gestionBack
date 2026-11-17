@@ -27,10 +27,8 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 import javax.crypto.spec.SecretKeySpec;
 
-import static org.springframework.http.HttpMethod.POST;
 import java.util.HexFormat;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 
@@ -40,6 +38,29 @@ public class SecurityConfiguration {
     @Value("${app.jwt.secret-key}")
     private String secret;
 
+    // Rôles (sans le préfixe ROLE_), voir TypeRole
+    private static final String ADMIN = "ADMIN_ENTREPRISE";
+    private static final String STOCK = "GESTIONNAIRE_STOCK";
+    private static final String COMMERCIAL = "COMMERCIAL";
+    private static final String CAISSIER = "CAISSIER";
+    private static final String CLIENT = "CLIENT";
+    private static final String FOURNISSEUR = "FOURNISSEUR";
+    /** Personnel de l'entreprise ; UTILISATEUR = accès en lecture seule. */
+    private static final String[] EQUIPE = {ADMIN, STOCK, COMMERCIAL, CAISSIER, "UTILISATEUR"};
+    private static final String[] EQUIPE_ET_CLIENT = {ADMIN, STOCK, COMMERCIAL, CAISSIER, "UTILISATEUR", CLIENT};
+    private static final String[] EQUIPE_ET_FOURNISSEUR = {ADMIN, STOCK, COMMERCIAL, CAISSIER, "UTILISATEUR", FOURNISSEUR};
+
+    /** Lit les rôles dans le claim "roles" du jeton (valeurs déjà préfixées par ROLE_). */
+    @Bean
+    public org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter jwtAuthenticationConverter() {
+        var authorities = new org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter();
+        authorities.setAuthoritiesClaimName("roles");
+        authorities.setAuthorityPrefix("");
+        var converter = new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(authorities);
+        return converter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.cors(Customizer.withDefaults())
@@ -47,26 +68,53 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
+                                // --- Accès public ---
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/login", "/auth/login").permitAll()
-                                .requestMatchers(HttpMethod.POST,
-                                        "/entreprises/create").permitAll()
-                                .requestMatchers(HttpMethod.POST,
-                                        "/inscription").permitAll()
-                                .requestMatchers(HttpMethod.POST,
-                                        "/activation").permitAll()
-                                .requestMatchers(HttpMethod.POST,
-                                        "/utilisateurs/inscription").permitAll()
                                 .requestMatchers("/error").permitAll()
                                 .requestMatchers(HttpMethod.POST,
-                                        "/auth/connexion", "/auth/mot-de-passe-oublie").permitAll()
-                                .requestMatchers(
-                                        "/v3/api-docs/**",
-                                        "/swagger-ui.html",
-                                        "/swagger-ui/**").permitAll()
+                                        "/auth/connexion", "/auth/mot-de-passe-oublie",
+                                        "/entreprises/create", "/utilisateurs/inscription").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/entreprises/public", "/photos/*").permitAll()
+                                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+
+                                // --- Compte de l'utilisateur connecté ---
+                                .requestMatchers(HttpMethod.GET, "/utilisateurs/email/**").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/utilisateurs/update/password").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/photos/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/entreprises/*").authenticated()
+
+                                // --- Administration ---
+                                .requestMatchers("/utilisateurs/**", "/entreprises/**").hasRole(ADMIN)
+
+                                // --- Catalogue : lecture pour tous, modification par la gestion de stock ---
+                                .requestMatchers(HttpMethod.GET, "/articles/historique/**").hasAnyRole(EQUIPE)
+                                .requestMatchers(HttpMethod.GET, "/articles/**", "/cathegory/**").authenticated()
+                                .requestMatchers("/articles/**", "/cathegory/**").hasAnyRole(ADMIN, STOCK)
+
+                                // --- Stock ---
+                                .requestMatchers(HttpMethod.GET, "/mvstk/**").hasAnyRole(EQUIPE)
+                                .requestMatchers("/mvstk/**").hasAnyRole(ADMIN, STOCK)
+
+                                // --- Clients et commandes clients ---
+                                .requestMatchers(HttpMethod.GET, "/clients/**").hasAnyRole(EQUIPE)
+                                .requestMatchers("/clients/**").hasAnyRole(ADMIN, COMMERCIAL)
+                                .requestMatchers(HttpMethod.GET, "/commandesclients/**").hasAnyRole(EQUIPE_ET_CLIENT)
+                                .requestMatchers(HttpMethod.POST, "/commandesclients/create").hasAnyRole(ADMIN, COMMERCIAL, CLIENT)
+                                .requestMatchers("/commandesclients/**").hasAnyRole(ADMIN, COMMERCIAL)
+
+                                // --- Fournisseurs et commandes fournisseurs ---
+                                .requestMatchers(HttpMethod.GET, "/fournisseurs/**").hasAnyRole(EQUIPE)
+                                .requestMatchers("/fournisseurs/**").hasAnyRole(ADMIN, STOCK)
+                                .requestMatchers(HttpMethod.GET, "/commandesfournisseurs/**").hasAnyRole(EQUIPE_ET_FOURNISSEUR)
+                                .requestMatchers("/commandesfournisseurs/**").hasAnyRole(ADMIN, STOCK)
+
+                                // --- Ventes ---
+                                .requestMatchers(HttpMethod.GET, "/ventes/**").hasAnyRole(EQUIPE)
+                                .requestMatchers("/ventes/**").hasAnyRole(ADMIN, COMMERCIAL, CAISSIER)
+
                                 .anyRequest().authenticated()
                         ).oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(Customizer.withDefaults())
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
             );
 
         return httpSecurity.build();

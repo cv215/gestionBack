@@ -39,7 +39,10 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(email, authentificationRequest.getPassword())
         );
         return ResponseEntity.ok(AuthentificationResponse.builder()
-            .accessToken(jetUtils.generateToken(authentication.getName()))
+            .accessToken(jetUtils.generateToken(authentication.getName(),
+                    authentication.getAuthorities().stream()
+                            .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                            .toList()))
             .build());
     }
 

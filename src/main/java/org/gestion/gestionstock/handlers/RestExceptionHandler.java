@@ -85,6 +85,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorDto, badRequest);
     }
 
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorDto> handleAccessDenied(org.springframework.security.access.AccessDeniedException exception, WebRequest webRequest){
+        final HttpStatus forbidden = HttpStatus.FORBIDDEN;
+        final String message = "Vous n'avez pas les droits nécessaires pour cette action.";
+        final ErrorDto errorDto = ErrorDto.builder()
+                .httpCode(forbidden.value())
+                .message(message)
+                .errors(Collections.singletonList(message))
+                .build();
+        return new ResponseEntity<>(errorDto, forbidden);
+    }
+
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<ErrorDto> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException exception, WebRequest webRequest){
         final HttpStatus conflict = HttpStatus.CONFLICT;

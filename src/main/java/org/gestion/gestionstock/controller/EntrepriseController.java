@@ -22,6 +22,13 @@ public class EntrepriseController implements EntrepriseApi {
         entrepriseService.delete(id);
     }
 
+    /** Liste publique (id, nom) utilisée par le formulaire d'inscription des clients et fournisseurs. */
+    @org.springframework.web.bind.annotation.GetMapping(value = "/entreprises/public",
+            produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    public List<java.util.Map<String, Object>> findAllPublic() {
+        return entrepriseService.findAllPublic();
+    }
+
     @Override
     public EntrepriseDto save(EntrepriseDto dto) {
         return entrepriseService.save(dto);
